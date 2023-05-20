@@ -18,9 +18,9 @@ class Board extends React.Component {
         if (this.board.turn() !== this.state.humanTurn || this.board.isGameOver()) {
             return
         }
-        if (move.to[1] == "1" || move.to[1] == "8") {
+        if (move.to[1] === "1" || move.to[1] === "8") {
             let piece = this.board.get(move.from).type
-            if (piece == "p") {
+            if (piece === "p") {
                 move.promotion = prompt("What would you like to promote to (q, r, b, n)?")
             }
         }
@@ -43,6 +43,16 @@ class Board extends React.Component {
     getComputerMove() {
         let moves = this.board.moves()
         return moves[Math.floor(Math.random() * moves.length)]
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.puzzle_number !== this.props.puzzle_number) {
+            this.board = new Chess(this.props.board_fen)
+            this.setState({
+                'fen': this.props.board_fen,
+                'humanTurn': this.board.turn()
+            })
+        }
     }
 
     render() {
