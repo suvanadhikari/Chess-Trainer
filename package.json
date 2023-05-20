@@ -1,0 +1,23 @@
+{
+  "name": "chess-trainer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suvanadhikari/Chess-Trainer.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/suvanadhikari/Chess-Trainer/issues"
+  },
+  "homepage": "https://github.com/suvanadhikari/Chess-Trainer#readme",
+  "dependencies": {
+    "@chrisoakman/chessboardjs": "^1.0.0",
+    "chess": "^1.1.0"
+  }
+}
