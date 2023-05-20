@@ -1,3 +1,8 @@
+# Specific to this project
+positions/
+
+
+
 # Logs
 logs
 *.log
