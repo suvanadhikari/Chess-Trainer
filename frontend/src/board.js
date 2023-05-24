@@ -48,6 +48,7 @@ class Board extends React.Component {
     componentDidUpdate(prevProps) {
         if (prevProps.puzzle_number !== this.props.puzzle_number) {
             this.board = new Chess(this.props.board_fen)
+            console.log(this.board.turn())
             this.setState({
                 'fen': this.props.board_fen,
                 'humanTurn': this.board.turn()
@@ -58,12 +59,16 @@ class Board extends React.Component {
     render() {
         return (
             <div id="chessboard">
-                <Chessboard position={this.state.fen} onDrop={(move) => {
-                    this.handleHumanMove({
-                        from: move.sourceSquare,
-                        to: move.targetSquare,
-                    })
-                }}></Chessboard>
+                <Chessboard 
+                    position={this.state.fen} 
+                    onDrop={(move) => {
+                        this.handleHumanMove({
+                            from: move.sourceSquare,
+                            to: move.targetSquare,
+                        })
+                    }}
+                    orientation={this.state.humanTurn === "w" ? "white" : "black"}
+                ></Chessboard>
             </div>
         );
     }

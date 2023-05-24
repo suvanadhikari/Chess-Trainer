@@ -1,6 +1,8 @@
 import './App.css';
 import React from 'react'
 import { Board } from "./board.js"
+import { BrowserRouter as Router, Route, Link } from "react-router-dom"
+import axios from "axios"
 
 class App extends React.Component {
 
@@ -10,18 +12,27 @@ class App extends React.Component {
   }
 
   getNewPuzzle() {
-    this.setState({
-      "board_fen": "r2qkbr1/pb1nn3/1ppp3p/8/3P1p2/2PB1N1P/PPQN1PP1/2K1R2R w q - 2 15",
-      "puzzle_number": this.state.puzzle_number + 1
-    })
+    axios.get("http://localhost:4000/getpuzzle")
+      .then(response => {
+        this.setState({
+          "board_fen": response.data.fen,
+          "puzzle_number": this.state.puzzle_number + 1
+        })
+      })
+      .catch(error => {
+        console.log(error)
+      })
   }
 
   render() {
+    // TODO: Add routes and links for starting page and puzzle pages
     return (
-      <div className="App">
-        <Board board_fen={this.state.board_fen} puzzle_number={this.state.puzzle_number}></Board>
-        <button onClick={this.getNewPuzzle.bind(this)}>Next board</button>
-      </div>
+      <Router>
+        <div className="App">
+          <Board board_fen={this.state.board_fen} puzzle_number={this.state.puzzle_number}></Board>
+          <button onClick={this.getNewPuzzle.bind(this)}>Next board</button>
+        </div>
+      </Router>
     );
   }
 }
