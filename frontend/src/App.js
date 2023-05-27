@@ -1,7 +1,7 @@
 import './App.css';
 import React from 'react'
 import { Board } from "./board.js"
-import { BrowserRouter as Router, Route, Link } from "react-router-dom"
+// import { BrowserRouter as Router, Route, Link } from "react-router-dom"
 import axios from "axios"
 
 class App extends React.Component {

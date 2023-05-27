@@ -3,12 +3,20 @@ const bodyParser = require("body-parser")
 const cors = require("cors")
 const fs = require("fs")
 const Engine = require("node-uci").Engine
+const Pool = require('pg').Pool
+require("dotenv").config()
 
-// Temporary - will be put in a postgres database soon
-const puzzles = fs.readFileSync("../positions/random_evals.csv", "utf-8").split("\n")
-const numPuzzles = puzzles.length
 
-const PORT = 4000
+const pool = new Pool({
+    user: process.env.DATABASE_USER,
+    host: process.env.DATABASE_HOST,
+    database: process.env.DATABASE_NAME,
+    password: process.env.DATABASE_PASSWORD,
+    port: process.env.DATABASE_PORT
+})
+
+
+const SERVER_PORT = 4000
 const app = express()
 
 app.use(cors())
@@ -18,10 +26,14 @@ app.use(bodyParser.json())
 const puzzleEndpoint = express.Router()
 
 puzzleEndpoint.route("/").get((req, res) => {
-    // Temporary - will be put in a postgres database soon
-    let puzzleFen = puzzles[Math.floor(Math.random() * numPuzzles)].split(",")[0]
-    res.json({
-        fen: puzzleFen
+
+    pool.query('SELECT fen FROM public."GeneralPositions" TABLESAMPLE SYSTEM_ROWS(1);', (error, results) => {
+        if (error) {
+            throw error
+        }
+        res.json({
+            fen: results.rows[0].fen
+        })
     })
 })
 
@@ -55,9 +67,9 @@ app.use('/evaluate', evaluationEndpoint)
 
 
 app.get('/', (req, res) => {
-    res.send("Hello World!")
+    res.send("This is the root endpoint.")
 })
 
-app.listen(PORT, () => {
-    console.log(`Listening on port ${PORT}`)
+app.listen(SERVER_PORT, () => {
+    console.log(`Listening on port ${SERVER_PORT}`)
 })

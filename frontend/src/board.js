@@ -95,6 +95,11 @@ class Board extends React.Component {
     render() {
         return (
             <div id="chessboard">
+                {this.props.mode === this.PUZZLE &&
+                <div>
+                    <p>{this.state.humanTurn === "w" ? "White" : "Black"} to move.</p>
+                </div>
+                }
                 <Chessboard 
                     position={this.state.fen} 
                     onDrop={(move) => {
