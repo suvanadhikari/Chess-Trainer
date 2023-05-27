@@ -4,19 +4,6 @@ const cors = require("cors")
 const fs = require("fs")
 const Engine = require("node-uci").Engine
 
-wasmPath = require("path").join(__dirname, "node_modules", "stockfish", "src", "stockfish.wasm");
-mod = {
-    locateFile: function (path){
-        if (path.indexOf(".wasm") > -1) {
-            /// Set the path to the wasm binary.
-            return wasmPath;
-        } else {
-            /// Set path to worker (self + the worker hash)
-            return __filename;
-        }
-    },
-};
-
 // Temporary - will be put in a postgres database soon
 const puzzles = fs.readFileSync("../positions/random_evals.csv", "utf-8").split("\n")
 const numPuzzles = puzzles.length
@@ -44,14 +31,19 @@ app.use('/getpuzzle', puzzleEndpoint)
 // Eval stuff
 const engine = new Engine('./stockfish/stockfish-windows-2022-x86-64-avx2.exe')
 
+let engine_ready = false
+
+engine.init().then(() => {
+    engine_ready = true;
+})
+
 
 const evaluationEndpoint = express.Router()
 
-evaluationEndpoint.route("/").get((req, res) => {
+evaluationEndpoint.route("/").post((req, res) => {
     let fen = req.body.fen
     engine.chain()
-        .init()
-        .setoption('MultiPV', 3)
+        .setoption('MultiPV', 4)
         .position(fen)
         .go({depth: 10})
         .then(result => {
