@@ -40,7 +40,7 @@ app.use('/getpuzzle', puzzleEndpoint)
 
 
 // Eval stuff
-const engine = new Engine('./stockfish/stockfish-windows-2022-x86-64-avx2.exe')
+const engine = new Engine('../stockfish/stockfish-windows-2022-x86-64-avx2.exe')
 
 let engine_ready = false
 
