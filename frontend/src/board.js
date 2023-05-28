@@ -4,8 +4,6 @@ import Chessboard from 'chessboardjsx'
 import { Chess } from "chess.js"
 import axios from "axios"
 
-let DEPTH = 15
-
 class Board extends React.Component {
 
     PUZZLE = 1
@@ -71,14 +69,10 @@ class Board extends React.Component {
 
     setLineEvals() {
         while (this.board.undo()){}
-        console.log(this.state.evalStates)
-        console.log(this.board.fen())
 
         let moveIndex = this.state.evalStates.moveIndex
         for (let i = 0; i < moveIndex; i++) {
-            console.log(`Attempting move ${this.state.evalStates.moves[i]}`)
             this.board.move(this.state.evalStates.moves[i])
-            console.log(this.board.fen())
         }
 
         let body = {fen: this.board.fen()}
@@ -86,9 +80,9 @@ class Board extends React.Component {
         axios.post("http://localhost:4000/evaluate", body)
             .then(response => {
                 let prevEvalStates = this.state.evalStates;
-
+                let maxDepthReached = response.data.info[response.data.info.length - 1].depth
                 prevEvalStates.lines = response.data.info.filter(elem => {
-                    return elem.depth === DEPTH
+                    return elem.depth === maxDepthReached
                 })
 
                 for (let i in prevEvalStates.lines) {
@@ -149,7 +143,7 @@ class Board extends React.Component {
             evaluation.value *= -1
         }
         if (evaluation.unit === "cp") {
-            return evaluation.value / 100;
+            return evaluation.value < 0 ? (evaluation.value / 100).toString() : "+" + evaluation.value / 100;
         } else {
             return ((evaluation.value < 0) ? `-#${-1 * evaluation.value}` : `#${evaluation.value}`)
         }
@@ -196,6 +190,8 @@ class Board extends React.Component {
                     <p>
                         Moves played: 
                         {
+                            this.state.evalStates.moves.length > 0
+                            ?
                             this.state.evalStates.moves.map((elem, idx) => {
                                 if (idx % 2 === 0) {
                                     return <span key={idx} onClick={() => {this.updateLineEvals(idx)}}>{` ${elem}`}</span>
@@ -203,12 +199,22 @@ class Board extends React.Component {
                                     return <span key={idx}>{` (${elem})`}</span>
                                 }
                             })
+                            :
+                            <span> None</span>
                         }
                         <br></br>
                         Evaluation after your moves: {this.state.evalStates.playerEval}
                     </p>
                     <div className = "lines">
-                        Best lines (replacing {this.state.evalStates.moves[this.state.evalStates.moveIndex]}):
+                        {
+                            this.state.evalStates.moves.length > 0 
+                            ?
+                            <span>Best lines (replacing {this.state.evalStates.moves[this.state.evalStates.moveIndex]}):</span>
+                            :
+                            <span>Best lines:</span>
+                        }
+                        
+                        
                         {this.state.evalStates.lines.map((elem, idx) => {
                             return <p key={idx}>({this.getEvalDisplay(elem.score)})  {elem.pv}</p>
                         })}
