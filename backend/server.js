@@ -56,9 +56,8 @@ evaluationEndpoint.route("/").post((req, res) => {
     engine.chain()
         .setoption('MultiPV', 4)
         .position(fen)
-        .go({depth: 10})
+        .go({depth: 15})
         .then(result => {
-            console.log(result.info[1].score)
             res.send(JSON.stringify(result))
         })
 })

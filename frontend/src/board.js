@@ -4,6 +4,7 @@ import Chessboard from 'chessboardjsx'
 import { Chess } from "chess.js"
 import axios from "axios"
 
+let DEPTH = 15
 
 class Board extends React.Component {
 
@@ -15,7 +16,9 @@ class Board extends React.Component {
         "humanTurn": "w",
         "evalStates": {
             "moves": [],
-            "playerEval": 0
+            "playerEval": 0,
+            "lines": [],
+            "moveIndex": 0
         }
     }
 
@@ -57,6 +60,54 @@ class Board extends React.Component {
             })
     }
 
+    updateLineEvals(index) {
+        let prevEvalStates = this.state.evalStates
+        prevEvalStates.moveIndex = index
+        this.setState({
+            evalStates: prevEvalStates
+        })
+        this.setLineEvals()
+    }
+
+    setLineEvals() {
+        while (this.board.undo()){}
+        console.log(this.state.evalStates)
+        console.log(this.board.fen())
+
+        let moveIndex = this.state.evalStates.moveIndex
+        for (let i = 0; i < moveIndex; i++) {
+            console.log(`Attempting move ${this.state.evalStates.moves[i]}`)
+            this.board.move(this.state.evalStates.moves[i])
+            console.log(this.board.fen())
+        }
+
+        let body = {fen: this.board.fen()}
+
+        axios.post("http://localhost:4000/evaluate", body)
+            .then(response => {
+                let prevEvalStates = this.state.evalStates;
+
+                prevEvalStates.lines = response.data.info.filter(elem => {
+                    return elem.depth === DEPTH
+                })
+
+                for (let i in prevEvalStates.lines) {
+                    let line = prevEvalStates.lines[i]
+                    let conversionBoard = new Chess(this.board.fen())
+                    let evalMoves = line.pv.split(" ")
+                    for (let j in evalMoves) {
+                        conversionBoard.move(evalMoves[j])
+                    }
+                    prevEvalStates.lines[i].pv = conversionBoard.history().join(" ")
+                }
+
+                this.setState({
+                    "evalStates": prevEvalStates,
+                    "fen": this.board.fen()
+                })
+            })
+    }
+
     transitionToEval() {
         let history = this.board.history()
         let body = {fen: this.board.fen()}
@@ -70,8 +121,6 @@ class Board extends React.Component {
             .then(response => {
                 let results = response.data.info
                 if (response.data.bestmove === '(none)') {
-                    // result.info[1].score is {unit: "cp", value: 0} for draw
-                    // result.info[1].score is {unit: "mate", value: 0} for mate
                     if (results[1].score.unit === "cp") {
                         prevEvalStates.playerEval = "0.5-0.5"
                     } else if ((history.length + (this.state.humanTurn === "w" ? 1 : 0)) % 2 === 0) {
@@ -86,34 +135,24 @@ class Board extends React.Component {
                     return
                 }
                 let evaluation = results.findLast(elem => {return elem.multipv === 1}).score
-                if (this.state.humanTurn === "b") {
-                    evaluation.value *= -1
-                }
-                if (evaluation.unit === "cp") {
-                    prevEvalStates.playerEval = evaluation.value / 100;
-                } else {
-                    prevEvalStates.playerEval = ((evaluation.value < 0) ? `-#${-1 * evaluation.value}` : `#${evaluation.value}`)
-                }
+                prevEvalStates.playerEval = this.getEvalDisplay(evaluation)
                 this.setState({
                     'evalStates': prevEvalStates,
                     'fen': this.board.fen()
                 })
+                this.setLineEvals(0)
             })
     }
 
-    getPlayerMovesString() {
-        let str = "Moves played: "
-        this.state.evalStates.moves.forEach((elem, idx) => {
-            if (idx % 2 === 1) {
-                str += "("
-            }
-            str += elem
-            if (idx % 2 === 1) {
-                str += ")"
-            }
-            str += " "
-        })
-        return str
+    getEvalDisplay(evaluation) {
+        if (this.state.humanTurn === "b") {
+            evaluation.value *= -1
+        }
+        if (evaluation.unit === "cp") {
+            return evaluation.value / 100;
+        } else {
+            return ((evaluation.value < 0) ? `-#${-1 * evaluation.value}` : `#${evaluation.value}`)
+        }
     }
 
     componentDidUpdate(prevProps) {
@@ -155,10 +194,25 @@ class Board extends React.Component {
                 {this.props.mode === this.EVALUATION &&
                 <div className = "evaluation">
                     <p>
-                        {this.getPlayerMovesString()}
+                        Moves played: 
+                        {
+                            this.state.evalStates.moves.map((elem, idx) => {
+                                if (idx % 2 === 0) {
+                                    return <span key={idx} onClick={() => {this.updateLineEvals(idx)}}>{` ${elem}`}</span>
+                                } else {
+                                    return <span key={idx}>{` (${elem})`}</span>
+                                }
+                            })
+                        }
                         <br></br>
                         Evaluation after your moves: {this.state.evalStates.playerEval}
                     </p>
+                    <div className = "lines">
+                        Best lines (replacing {this.state.evalStates.moves[this.state.evalStates.moveIndex]}):
+                        {this.state.evalStates.lines.map((elem, idx) => {
+                            return <p key={idx}>({this.getEvalDisplay(elem.score)})  {elem.pv}</p>
+                        })}
+                    </div>
                 </div>
                 }
             </div>
