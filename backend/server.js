@@ -26,7 +26,6 @@ app.use(bodyParser.json())
 const puzzleEndpoint = express.Router()
 
 puzzleEndpoint.route("/").get((req, res) => {
-
     pool.query('SELECT fen FROM public."GeneralPositions" TABLESAMPLE SYSTEM_ROWS(1);', (error, results) => {
         if (error) {
             throw error
@@ -59,6 +58,7 @@ evaluationEndpoint.route("/").post((req, res) => {
         .position(fen)
         .go({depth: 10})
         .then(result => {
+            console.log(result.info[1].score)
             res.send(JSON.stringify(result))
         })
 })

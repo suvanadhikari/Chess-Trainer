@@ -59,24 +59,61 @@ class Board extends React.Component {
 
     transitionToEval() {
         let history = this.board.history()
+        let body = {fen: this.board.fen()}
+
         while (this.board.undo()){}
-        
+
         let prevEvalStates = this.state.evalStates;
         prevEvalStates.moves = history
-        prevEvalStates.playerEval = 5;
-
-        let body = {fen: this.board.fen()}
         
         axios.post("http://localhost:4000/evaluate", body)
             .then(response => {
                 let results = response.data.info
-                let evaluation = results.findLast(elem => {return elem.multipv === 1}).score.value
-                prevEvalStates.playerEval = evaluation / 100;
+                if (response.data.bestmove === '(none)') {
+                    // result.info[1].score is {unit: "cp", value: 0} for draw
+                    // result.info[1].score is {unit: "mate", value: 0} for mate
+                    if (results[1].score.unit === "cp") {
+                        prevEvalStates.playerEval = "0.5-0.5"
+                    } else if ((history.length + (this.state.humanTurn === "w" ? 1 : 0)) % 2 == 0) {
+                        prevEvalStates.playerEval = "1-0"
+                    } else {
+                        prevEvalStates.playerEval = "0-1"
+                    }
+                    this.setState({
+                        'evalStates': prevEvalStates,
+                        'fen': this.board.fen()
+                    })
+                    return
+                }
+                let evaluation = results.findLast(elem => {return elem.multipv === 1}).score
+                if (this.state.humanTurn === "b") {
+                    evaluation.value *= -1
+                }
+                if (evaluation.unit === "cp") {
+                    prevEvalStates.playerEval = evaluation.value / 100;
+                } else {
+                    prevEvalStates.playerEval = ((evaluation.value < 0) ? `-#${-1 * evaluation.value}` : `#${evaluation.value}`)
+                }
                 this.setState({
                     'evalStates': prevEvalStates,
                     'fen': this.board.fen()
                 })
             })
+    }
+
+    getPlayerMovesString() {
+        let str = "Moves played: "
+        this.state.evalStates.moves.forEach((elem, idx) => {
+            if (idx % 2 == 1) {
+                str += "("
+            }
+            str += elem
+            if (idx % 2 == 1) {
+                str += ")"
+            }
+            str += " "
+        })
+        return str
     }
 
     componentDidUpdate(prevProps) {
@@ -95,11 +132,15 @@ class Board extends React.Component {
     render() {
         return (
             <div id="chessboard">
-                {this.props.mode === this.PUZZLE &&
                 <div>
-                    <p>{this.state.humanTurn === "w" ? "White" : "Black"} to move.</p>
+                    {
+                        this.props.mode === this.PUZZLE 
+                        ?
+                        <p>{this.state.humanTurn === "w" ? "White" : "Black"} to move.</p>
+                        :
+                        <p>You played {this.state.humanTurn === "w" ? "White": "Black"}.</p>
+                    }
                 </div>
-                }
                 <Chessboard 
                     position={this.state.fen} 
                     onDrop={(move) => {
@@ -109,12 +150,15 @@ class Board extends React.Component {
                         })
                     }}
                     orientation={this.state.humanTurn === "w" ? "white" : "black"}
+                    width="560"
                 ></Chessboard>
                 {this.props.mode === this.EVALUATION &&
                 <div className = "evaluation">
-                    <p>Your moves:</p> {this.state.evalStates.moves.map((elem, idx) => {return <p key={idx}>{elem} </p>})}
-                    <br></br>
-                    <p>Your evaluation: {this.state.evalStates.playerEval}</p>
+                    <p>
+                        {this.getPlayerMovesString()}
+                        <br></br>
+                        Evaluation after your moves: {this.state.evalStates.playerEval}
+                    </p>
                 </div>
                 }
             </div>
