@@ -74,7 +74,7 @@ class Board extends React.Component {
                     // result.info[1].score is {unit: "mate", value: 0} for mate
                     if (results[1].score.unit === "cp") {
                         prevEvalStates.playerEval = "0.5-0.5"
-                    } else if ((history.length + (this.state.humanTurn === "w" ? 1 : 0)) % 2 == 0) {
+                    } else if ((history.length + (this.state.humanTurn === "w" ? 1 : 0)) % 2 === 0) {
                         prevEvalStates.playerEval = "1-0"
                     } else {
                         prevEvalStates.playerEval = "0-1"
@@ -104,11 +104,11 @@ class Board extends React.Component {
     getPlayerMovesString() {
         let str = "Moves played: "
         this.state.evalStates.moves.forEach((elem, idx) => {
-            if (idx % 2 == 1) {
+            if (idx % 2 === 1) {
                 str += "("
             }
             str += elem
-            if (idx % 2 == 1) {
+            if (idx % 2 === 1) {
                 str += ")"
             }
             str += " "
