@@ -14,9 +14,11 @@ class Board extends React.Component {
         "humanTurn": "w",
         "evalStates": {
             "moves": [],
+            "evals": [],
             "playerEval": 0,
             "lines": [],
-            "moveIndex": 0
+            "moveIndex": 0,
+            "evalReady": false
         }
     }
 
@@ -58,98 +60,91 @@ class Board extends React.Component {
             })
     }
 
-    updateLineEvals(index) {
-        let prevEvalStates = this.state.evalStates
-        prevEvalStates.moveIndex = index
-        this.setState({
-            evalStates: prevEvalStates
-        })
-        this.setLineEvals()
-    }
 
-    removeDuplicates(a, key) {
-        let seen = new Set()
-        return a.filter(item => {
-            let k = key(item)
-            return seen.has(k) ? false : seen.add(k)
-        })
-    }
-
-    setLineEvals() {
-        while (this.board.undo()){}
-
-        let moveIndex = this.state.evalStates.moveIndex
-        for (let i = 0; i < moveIndex; i++) {
-            this.board.move(this.state.evalStates.moves[i])
+    setEvals(moveIndex) {
+        if (moveIndex >= this.state.evalStates.moves.length) {
+            let prevEvalStates = this.state.evalStates
+            prevEvalStates.evalReady = true
+            this.setState({
+                evalStates: prevEvalStates
+            })
+            return
         }
-
+        if (moveIndex > 0) {
+            let move = this.state.evalStates.moves[moveIndex - 1]
+            this.board.move(move)
+        }
+        
         let body = {fen: this.board.fen(), depth: 17}
-
         axios.post("http://localhost:4000/evaluate", body)
             .then(response => {
-                let prevEvalStates = this.state.evalStates;
                 let maxDepthReached = response.data.info[response.data.info.length - 1].depth
-                prevEvalStates.lines = response.data.info.filter(elem => {
+                let lines = response.data.info.filter(elem => {
                     return elem.depth === maxDepthReached && typeof(elem.pv) === "string"
                 })
 
-                for (let i in prevEvalStates.lines) {
-                    let line = prevEvalStates.lines[i]
+                for (let i in lines) {
+                    let line = lines[i]
                     let conversionBoard = new Chess(this.board.fen())
                     let evalMoves = line.pv.split(" ")
                     for (let j in evalMoves) {
                         conversionBoard.move(evalMoves[j])
                     }
-                    prevEvalStates.lines[i].pv = conversionBoard.history().join(" ")
+                    lines[i].pv = conversionBoard.history().join(" ")
+                    lines[i].evaluation = this.getEvalDisplay(lines[i].score, moveIndex)
                 }
-
-                this.setState({
-                    "evalStates": prevEvalStates,
-                    "fen": this.board.fen()
+                let prevEvalStates = this.state.evalStates;
+                prevEvalStates.lines.push(lines)
+                prevEvalStates.evals.push(lines[0].evaluation)
+                this.setState({evalStates: prevEvalStates}, () => {
+                    this.setEvals(moveIndex + 1)
                 })
             })
     }
 
+    changeEvalLine(idx) {
+        let prevEvalStates = this.state.evalStates
+        prevEvalStates.moveIndex = idx;
+
+        while (this.board.undo()){}
+
+        for (let i = 0; i < idx; i++) {
+            this.board.move(this.state.evalStates.moves[i])
+        }
+
+        this.setState({
+            evalStates: prevEvalStates,
+            fen: this.board.fen()
+        })
+    }
+
     transitionToEval() {
         let history = this.board.history()
-        let body = {fen: this.board.fen(), depth: 17}
 
         while (this.board.undo()){}
 
         let prevEvalStates = this.state.evalStates;
         prevEvalStates.moves = history
-        
-        axios.post("http://localhost:4000/evaluate", body)
-            .then(response => {
-                let results = response.data.info
-                if (response.data.bestmove === '(none)') {
-                    if (results[1].score.unit === "cp") {
-                        prevEvalStates.playerEval = "0.5-0.5"
-                    } else if ((history.length + (this.state.humanTurn === "w" ? 1 : 0)) % 2 === 0) {
-                        prevEvalStates.playerEval = "1-0"
-                    } else {
-                        prevEvalStates.playerEval = "0-1"
-                    }
-                    this.setState({
-                        'evalStates': prevEvalStates,
-                        'fen': this.board.fen()
-                    })
-                    return
-                }
-                let evaluation = results.findLast(elem => {return elem.multipv === 1}).score
-                prevEvalStates.playerEval = this.getEvalDisplay(evaluation)
-                this.setState({
-                    'evalStates': prevEvalStates,
-                    'fen': this.board.fen()
-                })
-                this.setLineEvals()
-            })
+        prevEvalStates.lines = []
+        prevEvalStates.evals = []
+
+        this.setState({
+            'evalStates': prevEvalStates,
+            'fen': this.board.fen()
+        })
+
+        this.setEvals(0)
+
     }
 
-    getEvalDisplay(evaluation) {
-        if (this.state.humanTurn === "b") {
+    getEvalDisplay(evaluation, moveIndex) {
+
+        if (moveIndex === undefined && this.state.humanTurn === "b") {
+            evaluation.value *= -1
+        } else if (moveIndex !== undefined && ((this.state.humanTurn === "w" ? 0 : 1) + moveIndex) % 2 === 1) {
             evaluation.value *= -1
         }
+
         if (evaluation.unit === "cp") {
             return evaluation.value < 0 ? (evaluation.value / 100).toString() : "+" + evaluation.value / 100;
         } else {
@@ -166,7 +161,15 @@ class Board extends React.Component {
             })
         }
         if (prevProps.mode !== this.props.mode && this.props.mode === this.EVALUATION) {
-            this.transitionToEval()
+            if (this.props.mode === this.EVALUATION) {
+                this.transitionToEval()
+            } else if (this.props.mode === this.PUZZLE) {
+                let prevEvalStates = this.state.evalStates
+                prevEvalStates.evalReady = true
+                this.setState({
+                    evalStates: prevEvalStates
+                })
+            }
         }
     }
 
@@ -202,9 +205,13 @@ class Board extends React.Component {
                             ?
                             this.state.evalStates.moves.map((elem, idx) => {
                                 if (idx % 2 === 0) {
-                                    return <span key={idx} onClick={() => {this.updateLineEvals(idx)}}>{` ${elem}`}</span>
+                                    return <span key={idx} onClick={() => {
+                                        this.changeEvalLine(idx)
+                                    }}>{` ${elem}`}</span>
                                 } else {
-                                    return <span key={idx}>{` (${elem})`}</span>
+                                    return <span key={idx} onClick={() => {
+                                        this.changeEvalLine(idx)
+                                    }}>{` (${elem})`}</span>
                                 }
                             })
                             :
@@ -227,9 +234,15 @@ class Board extends React.Component {
                         }
                         
                         
-                        {this.state.evalStates.lines.map((elem, idx) => {
-                            return <p key={idx}>({this.getEvalDisplay(elem.score)})  {elem.pv}</p>
-                        })}
+                        {
+                            this.state.evalStates.evalReady 
+                            ?
+                            this.state.evalStates.lines[this.state.evalStates.moveIndex].map((elem, idx) => {
+                                return <p key={idx}>({elem.evaluation})  {elem.pv}</p>
+                            })
+                            :
+                            <p>Eval not yet ready</p>
+                        }
                     </div>
                 </div>
                 }
