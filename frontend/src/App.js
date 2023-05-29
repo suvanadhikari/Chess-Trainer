@@ -58,7 +58,11 @@ class App extends React.Component {
           <div className="puzzle">
             <Board board_fen={this.state.board_fen} puzzle_number={this.state.puzzle_number} mode={this.state.mode}></Board>
             <button onClick={this.getNewPuzzle.bind(this)}>Next Board</button>
-            <button onClick={this.evaluatePuzzle.bind(this)}>Evaluate Position</button>
+            {
+              this.state.mode === this.PUZZLE 
+              &&
+              <button onClick={this.evaluatePuzzle.bind(this)}>Evaluate Position</button>
+            }
           </div>
         }
       </div>

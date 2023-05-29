@@ -53,10 +53,13 @@ const evaluationEndpoint = express.Router()
 
 evaluationEndpoint.route("/").post((req, res) => {
     let fen = req.body.fen
+    let depth = req.body.depth ? req.body.depth : 15
     engine.chain()
         .setoption('MultiPV', 4)
         .position(fen)
-        .go({depth: 15})
+        .go({
+            depth: depth
+        })
         .then(result => {
             res.send(JSON.stringify(result))
         })

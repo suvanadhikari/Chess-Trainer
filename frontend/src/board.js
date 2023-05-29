@@ -67,6 +67,14 @@ class Board extends React.Component {
         this.setLineEvals()
     }
 
+    removeDuplicates(a, key) {
+        let seen = new Set()
+        return a.filter(item => {
+            let k = key(item)
+            return seen.has(k) ? false : seen.add(k)
+        })
+    }
+
     setLineEvals() {
         while (this.board.undo()){}
 
@@ -75,15 +83,21 @@ class Board extends React.Component {
             this.board.move(this.state.evalStates.moves[i])
         }
 
-        let body = {fen: this.board.fen()}
+        let body = {fen: this.board.fen(), depth: 17}
+
+        console.log("Body here:")
+        console.log(body)
 
         axios.post("http://localhost:4000/evaluate", body)
             .then(response => {
                 let prevEvalStates = this.state.evalStates;
                 let maxDepthReached = response.data.info[response.data.info.length - 1].depth
+                console.log(response.data.info)
                 prevEvalStates.lines = response.data.info.filter(elem => {
-                    return elem.depth === maxDepthReached
+                    return elem.depth === maxDepthReached && typeof(elem.pv) === "string"
                 })
+                console.log("prevEvalStates lines")
+                console.log(prevEvalStates.lines)
 
                 for (let i in prevEvalStates.lines) {
                     let line = prevEvalStates.lines[i]
@@ -104,7 +118,7 @@ class Board extends React.Component {
 
     transitionToEval() {
         let history = this.board.history()
-        let body = {fen: this.board.fen()}
+        let body = {fen: this.board.fen(), depth: 17}
 
         while (this.board.undo()){}
 
@@ -134,7 +148,7 @@ class Board extends React.Component {
                     'evalStates': prevEvalStates,
                     'fen': this.board.fen()
                 })
-                this.setLineEvals(0)
+                this.setLineEvals()
             })
     }
 
