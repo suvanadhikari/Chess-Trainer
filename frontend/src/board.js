@@ -85,19 +85,13 @@ class Board extends React.Component {
 
         let body = {fen: this.board.fen(), depth: 17}
 
-        console.log("Body here:")
-        console.log(body)
-
         axios.post("http://localhost:4000/evaluate", body)
             .then(response => {
                 let prevEvalStates = this.state.evalStates;
                 let maxDepthReached = response.data.info[response.data.info.length - 1].depth
-                console.log(response.data.info)
                 prevEvalStates.lines = response.data.info.filter(elem => {
                     return elem.depth === maxDepthReached && typeof(elem.pv) === "string"
                 })
-                console.log("prevEvalStates lines")
-                console.log(prevEvalStates.lines)
 
                 for (let i in prevEvalStates.lines) {
                     let line = prevEvalStates.lines[i]
@@ -217,13 +211,17 @@ class Board extends React.Component {
                             <span> None</span>
                         }
                         <br></br>
-                        Evaluation after your moves: {this.state.evalStates.playerEval}
+                        Evaluation after all of your moves: {this.state.evalStates.playerEval}
                     </p>
                     <div className = "lines">
                         {
                             this.state.evalStates.moves.length > 0 
                             ?
-                            <span>Best lines (replacing {this.state.evalStates.moves[this.state.evalStates.moveIndex]}):</span>
+                            <span>
+                                Evaluation of {this.state.evalStates.moves[this.state.evalStates.moveIndex]}:
+                                <br></br>
+                                Best lines (replacing {this.state.evalStates.moves[this.state.evalStates.moveIndex]}):
+                            </span>
                             :
                             <span>Best lines:</span>
                         }
