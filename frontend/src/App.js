@@ -14,7 +14,8 @@ class App extends React.Component {
   state = {
     "board_fen": "start",
     "puzzle_number": -1,
-    "mode": this.STARTING
+    "mode": this.STARTING,
+    "displayEvalButton": false
   }
 
   getNewPuzzle() {
@@ -31,6 +32,13 @@ class App extends React.Component {
       })
   }
 
+  allowEvalButton(newVal) {
+    this.setState({
+      displayEvalButton: newVal
+    })
+    console.log("Changed to " + newVal)
+  }
+
   beginPuzzles() {
     this.setState({
       "mode": this.PUZZLE
@@ -40,7 +48,8 @@ class App extends React.Component {
 
   evaluatePuzzle() {
     this.setState({
-      "mode": this.EVALUATION
+      "mode": this.EVALUATION,
+      "displayEvalButton": false
     })
   }
 
@@ -56,10 +65,10 @@ class App extends React.Component {
           </div>
           :
           <div className="puzzle">
-            <Board board_fen={this.state.board_fen} puzzle_number={this.state.puzzle_number} mode={this.state.mode}></Board>
+            <Board board_fen={this.state.board_fen} puzzle_number={this.state.puzzle_number} mode={this.state.mode} allow_eval_button={this.allowEvalButton.bind(this)}></Board>
             <button onClick={this.getNewPuzzle.bind(this)}>Next Board</button>
             {
-              this.state.mode === this.PUZZLE 
+              (this.state.mode === this.PUZZLE && this.state.displayEvalButton)
               &&
               <button onClick={this.evaluatePuzzle.bind(this)}>Evaluate Position</button>
             }

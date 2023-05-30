@@ -37,6 +37,7 @@ class Board extends React.Component {
         }
         try {
             this.board.move(move)
+            this.props.allow_eval_button(true);
             this.setState({"fen": this.board.fen()})
             if (this.board.isGameOver()) {
                 return
@@ -46,6 +47,7 @@ class Board extends React.Component {
             }, 300)
         }
         catch(err) {
+            console.log(err)
             return
         }
     }
@@ -157,15 +159,16 @@ class Board extends React.Component {
             this.board = new Chess(this.props.board_fen)
             this.setState({
                 'fen': this.props.board_fen,
-                'humanTurn': this.board.turn()
+                'humanTurn': this.board.turn(),
             })
         }
         if (prevProps.mode !== this.props.mode && this.props.mode === this.EVALUATION) {
             if (this.props.mode === this.EVALUATION) {
                 this.transitionToEval()
             } else if (this.props.mode === this.PUZZLE) {
+                this.props.allow_eval_button(false)
                 let prevEvalStates = this.state.evalStates
-                prevEvalStates.evalReady = true
+                prevEvalStates.evalReady = false
                 this.setState({
                     evalStates: prevEvalStates
                 })
@@ -218,7 +221,7 @@ class Board extends React.Component {
                             <span> None</span>
                         }
                         <br></br>
-                        Evaluation after all of your moves: {this.state.evalStates.playerEval}
+                        Evaluation after all of your moves: {this.state.evalStates.evalReady ? this.state.evalStates.evals[this.state.evalStates.evals.length - 1] : "Calculating..."}
                     </p>
                     <div className = "lines">
                         {
