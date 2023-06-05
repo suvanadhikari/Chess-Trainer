@@ -27,16 +27,12 @@ class App extends React.Component {
           "mode": this.PUZZLE
         })
       })
-      .catch(error => {
-        console.log(error)
-      })
   }
 
   allowEvalButton(newVal) {
     this.setState({
       displayEvalButton: newVal
     })
-    console.log("Changed to " + newVal)
   }
 
   beginPuzzles() {

@@ -24,6 +24,25 @@ class Board extends React.Component {
 
     board = new Chess()
 
+    handleEvalMove(move) {
+        if (this.board.isGameOver()) {
+            return
+        }
+        if (move.to[1] === "1" || move.to[1] === "8") {
+            let piece = this.board.get(move.from).type
+            if (piece === "p") {
+                move.promotion = prompt("What would you like to promote to (q, r, b, n)?")
+            }
+        }
+        try {
+            this.board.move(move)
+            this.setState({"fen": this.board.fen()})
+        }
+        catch(err) {
+            return
+        }
+    }
+
 
     handleHumanMove(move) {
         if (this.board.turn() !== this.state.humanTurn || this.board.isGameOver()) {
@@ -47,7 +66,6 @@ class Board extends React.Component {
             }, 300)
         }
         catch(err) {
-            console.log(err)
             return
         }
     }
@@ -70,6 +88,7 @@ class Board extends React.Component {
             this.setState({
                 evalStates: prevEvalStates
             })
+            while (this.board.undo()) {}
             return
         }
         if (moveIndex > 0) {
@@ -133,9 +152,7 @@ class Board extends React.Component {
         this.setState({
             'evalStates': prevEvalStates,
             'fen': this.board.fen()
-        })
-
-        this.setEvals(0)
+        }, () => {this.setEvals(0)})
 
     }
 
@@ -155,24 +172,25 @@ class Board extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.puzzle_number !== this.props.puzzle_number) {
-            this.board = new Chess(this.props.board_fen)
-            this.setState({
-                'fen': this.props.board_fen,
-                'humanTurn': this.board.turn(),
-            })
-        }
-        if (prevProps.mode !== this.props.mode && this.props.mode === this.EVALUATION) {
+        if (prevProps.mode !== this.props.mode) {
             if (this.props.mode === this.EVALUATION) {
                 this.transitionToEval()
             } else if (this.props.mode === this.PUZZLE) {
                 this.props.allow_eval_button(false)
                 let prevEvalStates = this.state.evalStates
                 prevEvalStates.evalReady = false
+                prevEvalStates.moveIndex = 0
                 this.setState({
                     evalStates: prevEvalStates
                 })
             }
+        }
+        if (prevProps.puzzle_number !== this.props.puzzle_number) {
+            this.board = new Chess(this.props.board_fen)
+            this.setState({
+                'fen': this.props.board_fen,
+                'humanTurn': this.board.turn(),
+            })
         }
     }
 
@@ -191,10 +209,17 @@ class Board extends React.Component {
                 <Chessboard 
                     position={this.state.fen} 
                     onDrop={(move) => {
-                        this.handleHumanMove({
-                            from: move.sourceSquare,
-                            to: move.targetSquare,
-                        })
+                        if (this.props.mode === this.PUZZLE) {
+                            this.handleHumanMove({
+                                from: move.sourceSquare,
+                                to: move.targetSquare,
+                            })
+                        } else if (this.props.mode === this.EVALUATION) {
+                            this.handleEvalMove({
+                                from: move.sourceSquare,
+                                to: move.targetSquare
+                            })
+                        }
                     }}
                     orientation={this.state.humanTurn === "w" ? "white" : "black"}
                     width="560"
@@ -220,7 +245,7 @@ class Board extends React.Component {
                             :
                             <span> None</span>
                         }
-                        <br></br>
+                        <br></br><br></br>
                         Evaluation after all of your moves: {this.state.evalStates.evalReady ? this.state.evalStates.evals[this.state.evalStates.evals.length - 1] : "Calculating..."}
                     </p>
                     <div className = "lines">
@@ -228,8 +253,15 @@ class Board extends React.Component {
                             this.state.evalStates.moves.length > 0 
                             ?
                             <span>
-                                Evaluation of {this.state.evalStates.moves[this.state.evalStates.moveIndex]}:
-                                <br></br>
+                                Evaluation after {this.state.evalStates.moves[this.state.evalStates.moveIndex]}: 
+                                {
+                                    this.state.evalStates.evalReady
+                                    ?
+                                    " " + this.state.evalStates.lines[this.state.evalStates.moveIndex][0].evaluation
+                                    :
+                                    " Calculating..."
+                                }
+                                <br></br><br></br>
                                 Best lines (replacing {this.state.evalStates.moves[this.state.evalStates.moveIndex]}):
                             </span>
                             :
@@ -238,13 +270,13 @@ class Board extends React.Component {
                         
                         
                         {
-                            this.state.evalStates.evalReady 
+                            this.state.evalStates.evalReady
                             ?
                             this.state.evalStates.lines[this.state.evalStates.moveIndex].map((elem, idx) => {
                                 return <p key={idx}>({elem.evaluation})  {elem.pv}</p>
                             })
                             :
-                            <p>Eval not yet ready</p>
+                            <p>Calculating...</p>
                         }
                     </div>
                 </div>
