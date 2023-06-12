@@ -7,6 +7,13 @@ const Pool = require('pg').Pool
 require("dotenv").config()
 
 
+const SERVER_PORT = 4000
+const app = express()
+
+app.use(cors())
+app.use(bodyParser.json())
+
+
 const pool = new Pool({
     user: process.env.DATABASE_USER,
     host: process.env.DATABASE_HOST,
@@ -14,13 +21,6 @@ const pool = new Pool({
     password: process.env.DATABASE_PASSWORD,
     port: process.env.DATABASE_PORT
 })
-
-
-const SERVER_PORT = 4000
-const app = express()
-
-app.use(cors())
-app.use(bodyParser.json())
 
 
 const puzzleEndpoint = express.Router()

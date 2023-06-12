@@ -72,7 +72,7 @@ class Board extends React.Component {
 
     performComputerMove() {
         let body = {fen: this.board.fen()}
-        axios.post("http://localhost:4000/evaluate", body)
+        axios.post("http://192.168.1.223:4000/evaluate", body)
             .then(response => {
                 let move = response.data.bestmove
                 this.board.move(move)
@@ -97,7 +97,7 @@ class Board extends React.Component {
         }
         
         let body = {fen: this.board.fen(), depth: 17}
-        axios.post("http://localhost:4000/evaluate", body)
+        axios.post("http://192.168.1.223:4000/evaluate", body)
             .then(response => {
                 let maxDepthReached = response.data.info[response.data.info.length - 1].depth
                 let lines = response.data.info.filter(elem => {

@@ -19,7 +19,7 @@ class App extends React.Component {
   }
 
   getNewPuzzle() {
-    axios.get("http://localhost:4000/getpuzzle")
+    axios.get("http://192.168.1.223:4000/getpuzzle")
       .then(response => {
         this.setState({
           "board_fen": response.data.fen,
