@@ -15,6 +15,7 @@ class Board extends React.Component {
         "evalStates": {
             "moves": [],
             "evals": [],
+            "evalsAfter": [],
             "playerEval": 0,
             "lines": [],
             "moveIndex": 0,
@@ -82,7 +83,7 @@ class Board extends React.Component {
 
 
     setEvals(moveIndex) {
-        if (moveIndex >= this.state.evalStates.moves.length) {
+        if (moveIndex > this.state.evalStates.moves.length) {
             let prevEvalStates = this.state.evalStates
             prevEvalStates.evalReady = true
             this.setState({
@@ -104,6 +105,7 @@ class Board extends React.Component {
                     return elem.depth === maxDepthReached && typeof(elem.pv) === "string"
                 })
 
+                
                 for (let i in lines) {
                     let line = lines[i]
                     let conversionBoard = new Chess(this.board.fen())
@@ -115,8 +117,13 @@ class Board extends React.Component {
                     lines[i].evaluation = this.getEvalDisplay(lines[i].score, moveIndex)
                 }
                 let prevEvalStates = this.state.evalStates;
-                prevEvalStates.lines.push(lines)
-                prevEvalStates.evals.push(lines[0].evaluation)
+                if (moveIndex < this.state.evalStates.moves.length) {
+                    prevEvalStates.lines.push(lines)
+                    prevEvalStates.evals.push(lines[0].evaluation)
+                }
+                if (moveIndex > 0) {
+                    prevEvalStates.evalsAfter.push(lines[0].evaluation)
+                }
                 this.setState({evalStates: prevEvalStates}, () => {
                     this.setEvals(moveIndex + 1)
                 })
@@ -253,11 +260,20 @@ class Board extends React.Component {
                             this.state.evalStates.moves.length > 0 
                             ?
                             <span>
-                                Evaluation after {this.state.evalStates.moves[this.state.evalStates.moveIndex]}: 
+                                Evaluation before {this.state.evalStates.moves[this.state.evalStates.moveIndex]}: 
                                 {
                                     this.state.evalStates.evalReady
                                     ?
-                                    " " + this.state.evalStates.lines[this.state.evalStates.moveIndex][0].evaluation
+                                    " " + this.state.evalStates.evals[this.state.evalStates.moveIndex]
+                                    :
+                                    " Calculating..."
+                                }
+                                <br></br>
+                                Evaluation after {this.state.evalStates.moves[this.state.evalStates.moveIndex]}:
+                                {
+                                    this.state.evalStates.evalReady
+                                    ?
+                                    " " + this.state.evalStates.evalsAfter[this.state.evalStates.moveIndex]
                                     :
                                     " Calculating..."
                                 }
