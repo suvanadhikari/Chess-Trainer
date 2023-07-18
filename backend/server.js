@@ -1,7 +1,6 @@
 const express = require("express")
 const bodyParser = require("body-parser")
 const cors = require("cors")
-const fs = require("fs")
 const Engine = require("node-uci").Engine
 const Pool = require('pg').Pool
 require("dotenv").config()
@@ -39,22 +38,14 @@ puzzleEndpoint.route("/").get((req, res) => {
 app.use('/getpuzzle', puzzleEndpoint)
 
 
-// Eval stuff
-const engine = new Engine('../stockfish/stockfish-windows-2022-x86-64-avx2.exe')
-
-let engine_ready = false
-
-engine.init().then(() => {
-    engine_ready = true;
-})
-
-
 const evaluationEndpoint = express.Router()
 
 evaluationEndpoint.route("/").post((req, res) => {
     let fen = req.body.fen
     let depth = req.body.depth ? req.body.depth : 15
+    const engine = new Engine(process.env.STOCKFISH_LOCATION)
     engine.chain()
+        .init()
         .setoption('MultiPV', 4)
         .position(fen)
         .go({
