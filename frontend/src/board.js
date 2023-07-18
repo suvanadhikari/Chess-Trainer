@@ -18,7 +18,7 @@ class Board extends React.Component {
             "evalsAfter": [],
             "playerEval": 0,
             "lines": [],
-            "moveIndex": 0,
+            "moveIndex": -1,
             "evalReady": false
         }
     }
@@ -136,7 +136,7 @@ class Board extends React.Component {
 
         while (this.board.undo()){}
 
-        for (let i = 0; i < idx; i++) {
+        for (let i = 0; i <= idx; i++) {
             this.board.move(this.state.evalStates.moves[i])
         }
 
@@ -186,7 +186,7 @@ class Board extends React.Component {
                 this.props.allow_eval_button(false)
                 let prevEvalStates = this.state.evalStates
                 prevEvalStates.evalReady = false
-                prevEvalStates.moveIndex = 0
+                prevEvalStates.moveIndex = -1
                 this.setState({
                     evalStates: prevEvalStates
                 })
@@ -238,17 +238,22 @@ class Board extends React.Component {
                         {
                             this.state.evalStates.moves.length > 0
                             ?
-                            this.state.evalStates.moves.map((elem, idx) => {
-                                if (idx % 2 === 0) {
-                                    return <span key={idx} onClick={() => {
-                                        this.changeEvalLine(idx)
-                                    }}>{` ${elem}`}</span>
-                                } else {
-                                    return <span key={idx} onClick={() => {
-                                        this.changeEvalLine(idx)
-                                    }}>{` (${elem})`}</span>
-                                }
-                            })
+                            <span>
+                                <span key="-1" onClick={() => {
+                                    this.changeEvalLine(-1)
+                                }}> ...</span>
+                                {this.state.evalStates.moves.map((elem, idx) => {
+                                    if (idx % 2 === 0) {
+                                        return <span key={idx} onClick={() => {
+                                            this.changeEvalLine(idx)
+                                        }}>{` ${elem}`}</span>
+                                    } else {
+                                        return <span key={idx} onClick={() => {
+                                            this.changeEvalLine(idx)
+                                        }}>{` (${elem})`}</span>
+                                    }
+                                })}
+                            </span>
                             :
                             <span> None</span>
                         }
@@ -260,39 +265,63 @@ class Board extends React.Component {
                             this.state.evalStates.moves.length > 0 
                             ?
                             <span>
-                                Evaluation before {this.state.evalStates.moves[this.state.evalStates.moveIndex]}: 
                                 {
-                                    this.state.evalStates.evalReady
+                                    this.state.evalStates.moveIndex >= 0 
                                     ?
-                                    " " + this.state.evalStates.evals[this.state.evalStates.moveIndex]
+                                    <span>
+                                        Evaluation before {this.state.evalStates.moves[this.state.evalStates.moveIndex]}: 
+                                        {
+                                            this.state.evalStates.evalReady
+                                            ?
+                                            " " + this.state.evalStates.evals[this.state.evalStates.moveIndex]
+                                            :
+                                            " Calculating..."
+                                        }
+                                    </span>
                                     :
-                                    " Calculating..."
+                                    <span>
+                                        Evaluation before the first move: 
+                                        {
+                                            this.state.evalStates.evalReady
+                                            ?
+                                            " " + this.state.evalStates.evals[0]
+                                            :
+                                            " Calculating..."
+                                        }
+                                    </span>
                                 }
                                 <br></br>
-                                Evaluation after {this.state.evalStates.moves[this.state.evalStates.moveIndex]}:
                                 {
-                                    this.state.evalStates.evalReady
-                                    ?
-                                    " " + this.state.evalStates.evalsAfter[this.state.evalStates.moveIndex]
-                                    :
-                                    " Calculating..."
+                                    this.state.evalStates.moveIndex >= 0
+                                    &&
+                                    <span>
+                                        Evaluation after {this.state.evalStates.moves[this.state.evalStates.moveIndex]}:
+                                        {
+                                            this.state.evalStates.evalReady
+                                            ?
+                                            " " + this.state.evalStates.evalsAfter[this.state.evalStates.moveIndex]
+                                            :
+                                            " Calculating..."
+                                        }
+                                    </span>
                                 }
                                 <br></br><br></br>
-                                Best lines (replacing {this.state.evalStates.moves[this.state.evalStates.moveIndex]}):
+                                {this.state.evalStates.moveIndex >= 0 &&
+                                    <span>
+                                        Best lines (replacing {this.state.evalStates.moves[this.state.evalStates.moveIndex]}):
+                                    </span>
+                                }
                             </span>
                             :
                             <span>Best lines:</span>
                         }
                         
-                        
                         {
-                            this.state.evalStates.evalReady
-                            ?
+                            (this.state.evalStates.moveIndex >= 0 && this.state.evalStates.evalReady)
+                            &&
                             this.state.evalStates.lines[this.state.evalStates.moveIndex].map((elem, idx) => {
                                 return <p key={idx}>({elem.evaluation})  {elem.pv}</p>
                             })
-                            :
-                            <p>Calculating...</p>
                         }
                     </div>
                 </div>
