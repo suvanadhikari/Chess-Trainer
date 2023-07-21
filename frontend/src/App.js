@@ -19,7 +19,8 @@ class App extends React.Component {
   }
 
   getNewPuzzle() {
-    axios.get("http://192.168.1.223:4000/getpuzzle")
+    console.log(process.env)
+    axios.get(`${process.env.REACT_APP_SERVER_PORT}/getpuzzle`)
       .then(response => {
         this.setState({
           "board_fen": response.data.fen,

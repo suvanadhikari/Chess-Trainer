@@ -1,5 +1,11 @@
+body {
+    background-color: #121212;
+}
+.App {
+    text-align: center;
+    color: white;
+    padding: 0px;
+}
 .puzzle {
-    position: absolute;
-    left: 50%;
-    margin-left: -280px;
+    display: inline-block;
 }

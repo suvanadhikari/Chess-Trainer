@@ -73,7 +73,7 @@ class Board extends React.Component {
 
     performComputerMove() {
         let body = {fen: this.board.fen()}
-        axios.post("http://192.168.1.223:4000/evaluate", body)
+        axios.post(`${process.env.REACT_APP_SERVER_PORT}/evaluate`, body)
             .then(response => {
                 let move = response.data.bestmove
                 this.board.move(move)
@@ -98,13 +98,12 @@ class Board extends React.Component {
         }
         
         let body = {fen: this.board.fen(), depth: 17}
-        axios.post("http://192.168.1.223:4000/evaluate", body)
+        axios.post(`${process.env.REACT_APP_SERVER_PORT}/evaluate`, body)
             .then(response => {
                 let maxDepthReached = response.data.info[response.data.info.length - 1].depth
                 let lines = response.data.info.filter(elem => {
                     return elem.depth === maxDepthReached && typeof(elem.pv) === "string"
                 })
-
                 
                 for (let i in lines) {
                     let line = lines[i]
@@ -155,6 +154,8 @@ class Board extends React.Component {
         prevEvalStates.moves = history
         prevEvalStates.lines = []
         prevEvalStates.evals = []
+        prevEvalStates.evalsAfter = []
+        prevEvalStates.evalReady = false;
 
         this.setState({
             'evalStates': prevEvalStates,
@@ -204,35 +205,39 @@ class Board extends React.Component {
     render() {
         return (
             <div id="chessboard">
-                <div>
-                    {
-                        this.props.mode === this.PUZZLE 
-                        ?
-                        <p>{this.state.humanTurn === "w" ? "White" : "Black"} to move.</p>
-                        :
-                        <p>You played {this.state.humanTurn === "w" ? "White": "Black"}.</p>
-                    }
-                </div>
-                <Chessboard 
-                    position={this.state.fen} 
-                    onDrop={(move) => {
-                        if (this.props.mode === this.PUZZLE) {
-                            this.handleHumanMove({
-                                from: move.sourceSquare,
-                                to: move.targetSquare,
-                            })
-                        } else if (this.props.mode === this.EVALUATION) {
-                            this.handleEvalMove({
-                                from: move.sourceSquare,
-                                to: move.targetSquare
-                            })
+                <div className="boardBox">
+                    <Chessboard
+                        darkSquareStyle={{backgroundColor: 'rgb(112,102,119)'}}
+                        lightSquareStyle={{backgroundColor: 'rgb(204,183,174)'}}
+                        position={this.state.fen} 
+                        onDrop={(move) => {
+                            if (this.props.mode === this.PUZZLE) {
+                                this.handleHumanMove({
+                                    from: move.sourceSquare,
+                                    to: move.targetSquare,
+                                })
+                            } else if (this.props.mode === this.EVALUATION) {
+                                this.handleEvalMove({
+                                    from: move.sourceSquare,
+                                    to: move.targetSquare
+                                })
+                            }
+                        }}
+                        orientation={this.state.humanTurn === "w" ? "white" : "black"}
+                        width="560"
+                    ></Chessboard>
+                    <div className="turnBox">
+                        {
+                            this.props.mode === this.PUZZLE 
+                            ?
+                            <p>{this.state.humanTurn === "w" ? "White" : "Black"} to move.</p>
+                            :
+                            <p>You played {this.state.humanTurn === "w" ? "White": "Black"}.</p>
                         }
-                    }}
-                    orientation={this.state.humanTurn === "w" ? "white" : "black"}
-                    width="560"
-                ></Chessboard>
+                    </div>
+                </div>
                 {this.props.mode === this.EVALUATION &&
-                <div className = "evaluation">
+                <div className = "evaluationBox">
                     <p>
                         Moves played: 
                         {
