@@ -1,6 +1,8 @@
 #chessboard {
     display: flex;
     flex-direction: row;
+    background-color: #232323;
+    margin-top: 20px;
 }
 .boardBox {
     padding: 0px;
@@ -17,5 +19,4 @@
     width: 30vw;
     padding-left: 10px;
     padding-right: 10px;
-    background-color: #232323;
 }
