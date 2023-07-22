@@ -128,6 +128,9 @@ class Board extends React.Component {
     }
 
     changeEvalLine(idx) {
+        if (!this.state.evalStates.evalReady) {
+            return
+        }
         let prevEvalStates = this.state.evalStates
         prevEvalStates.moveIndex = idx + 1;
 
@@ -242,16 +245,16 @@ class Board extends React.Component {
                             this.state.evalStates.moves.length > 0
                             ?
                             <span>
-                                <span key="-1" onClick={() => {
+                                <span key="-1" className={this.state.evalStates.moveIndex === 0 ? "selectedMove" : ""} onClick={() => {
                                     this.changeEvalLine(-1)
                                 }}> ...</span>
                                 {this.state.evalStates.moves.map((elem, idx) => {
                                     if (idx % 2 === 0) {
-                                        return <span key={idx} onClick={() => {
+                                        return <span key={idx} className={this.state.evalStates.moveIndex === idx + 1 ? "selectedMove" : ""} onClick={() => {
                                             this.changeEvalLine(idx)
                                         }}>{` ${elem}`}</span>
                                     } else {
-                                        return <span key={idx} onClick={() => {
+                                        return <span key={idx} className={this.state.evalStates.moveIndex === idx + 1 ? "selectedMove" : ""} onClick={() => {
                                             this.changeEvalLine(idx)
                                         }}>{` (${elem})`}</span>
                                     }

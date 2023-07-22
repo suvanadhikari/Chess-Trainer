@@ -1,6 +1,7 @@
 import './App.css';
 import React from 'react'
 import { Board } from "./board.js"
+import { SettingsOverlay } from "./settingsOverlay.js"
 // import { BrowserRouter as Router, Route, Link } from "react-router-dom"
 import axios from "axios"
 
@@ -62,15 +63,22 @@ class App extends React.Component {
           </div>
           :
           <div className="puzzle">
-            <Board board_fen={this.state.board_fen} puzzle_number={this.state.puzzle_number} mode={this.state.mode} allow_eval_button={this.allowEvalButton.bind(this)}></Board>
+            <Board 
+              board_fen={this.state.board_fen} 
+              puzzle_number={this.state.puzzle_number} 
+              mode={this.state.mode} 
+              allow_eval_button={this.allowEvalButton.bind(this)}>
+              </Board>
             <button onClick={this.getNewPuzzle.bind(this)}>Next Board</button>
             {
               (this.state.mode === this.PUZZLE && this.state.displayEvalButton)
               &&
               <button onClick={this.evaluatePuzzle.bind(this)}>Evaluate Position</button>
             }
+            <SettingsOverlay></SettingsOverlay>
           </div>
         }
+
       </div>
     );
   }
