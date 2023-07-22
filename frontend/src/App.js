@@ -16,11 +16,16 @@ class App extends React.Component {
     "board_fen": "start",
     "puzzle_number": -1,
     "mode": this.STARTING,
-    "displayEvalButton": false
+    "displayEvalButton": false,
+    "settings": {
+      "limitStrength": false,
+      "engineElo": 3000,
+      "moveDepth": 15,
+      "reviewDepth": 17
+    }
   }
 
   getNewPuzzle() {
-    console.log(process.env)
     axios.get(`${process.env.REACT_APP_SERVER_PORT}/getpuzzle`)
       .then(response => {
         this.setState({
@@ -51,6 +56,10 @@ class App extends React.Component {
     })
   }
 
+  updateSettings(newSettings) {
+    this.setState({"settings": newSettings})
+  }
+
   render() {
     // TODO: Add routes and links for starting page and puzzle pages
     return (
@@ -67,7 +76,8 @@ class App extends React.Component {
               board_fen={this.state.board_fen} 
               puzzle_number={this.state.puzzle_number} 
               mode={this.state.mode} 
-              allow_eval_button={this.allowEvalButton.bind(this)}>
+              allow_eval_button={this.allowEvalButton.bind(this)}
+              settings={this.state.settings}>
               </Board>
             <button onClick={this.getNewPuzzle.bind(this)}>Next Board</button>
             {
@@ -75,7 +85,7 @@ class App extends React.Component {
               &&
               <button onClick={this.evaluatePuzzle.bind(this)}>Evaluate Position</button>
             }
-            <SettingsOverlay></SettingsOverlay>
+            <SettingsOverlay updateCallback={this.updateSettings.bind(this)}></SettingsOverlay>
           </div>
         }
 

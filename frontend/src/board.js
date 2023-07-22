@@ -60,7 +60,12 @@ class Board extends React.Component {
     }
 
     performComputerMove() {
-        let body = {fen: this.board.fen()}
+        let body = {fen: this.board.fen(), depth: this.props.settings.moveDepth}
+        if (this.props.settings.limitStrength) {
+            body['strength'] = this.props.settings.engineElo
+        }
+        console.log("Sent request:")
+        console.log(body)
         axios.post(`${process.env.REACT_APP_SERVER_PORT}/evaluate`, body)
             .then(response => {
                 let move = response.data.bestmove
@@ -85,7 +90,9 @@ class Board extends React.Component {
             this.board.move(move)
         }
         
-        let body = {fen: this.board.fen(), depth: 17}
+        let body = {fen: this.board.fen(), depth: this.props.settings.reviewDepth}
+        console.log("Sent request:")
+        console.log(body)
         axios.post(`${process.env.REACT_APP_SERVER_PORT}/evaluate`, body)
             .then(response => {
                 let maxDepthReached = response.data.info[response.data.info.length - 1].depth

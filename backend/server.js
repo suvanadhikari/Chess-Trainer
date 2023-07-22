@@ -43,17 +43,33 @@ const evaluationEndpoint = express.Router()
 evaluationEndpoint.route("/").post((req, res) => {
     let fen = req.body.fen
     let depth = req.body.depth ? req.body.depth : 15
+    let strength = req.body.strength
     const engine = new Engine(process.env.STOCKFISH_LOCATION)
-    engine.chain()
-        .init()
-        .setoption('MultiPV', 4)
-        .position(fen)
-        .go({
-            depth: depth
-        })
-        .then(result => {
-            res.send(JSON.stringify(result))
-        })
+    if (strength === undefined) {
+        engine.chain()
+            .init()
+            .setoption('MultiPV', 4)
+            .position(fen)
+            .go({
+                depth: depth
+            })
+            .then(result => {
+                res.send(JSON.stringify(result))
+            })
+    } else {
+        engine.chain()
+            .init()
+            .setoption('UCI_LimitStrength', true)
+            .setoption('UCI_Elo', strength)
+            .position(fen)
+            .go({
+                depth: depth
+            })
+            .then(result => {
+                res.send(JSON.stringify(result))
+            })
+
+    }
 })
 
 app.use('/evaluate', evaluationEndpoint)

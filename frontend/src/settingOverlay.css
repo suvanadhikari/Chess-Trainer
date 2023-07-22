@@ -1,0 +1,8 @@
+.settingDiv {
+    display: flex;
+    align-items: center;
+}
+
+#settingsHeader {
+    margin-top: 0px;
+}
