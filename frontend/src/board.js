@@ -26,7 +26,7 @@ class Board extends React.Component {
     board = new Chess()
 
     handleEvalMove(move) {
-        if (this.board.isGameOver()) {
+        if (this.board.isGameOver() || !this.state.evalStates.evalReady) {
             return
         }
         try {
