@@ -1,6 +1,6 @@
 import "./board.css"
 import React from "react";
-import Chessboard from 'chessboardjsx'
+import { Chessboard } from 'react-chessboard'
 import { Chess } from "chess.js"
 import axios from "axios"
 
@@ -29,12 +29,6 @@ class Board extends React.Component {
         if (this.board.isGameOver()) {
             return
         }
-        if (move.to[1] === "1" || move.to[1] === "8") {
-            let piece = this.board.get(move.from).type
-            if (piece === "p") {
-                move.promotion = prompt("What would you like to promote to (q, r, b, n)?")
-            }
-        }
         try {
             this.board.move(move)
             this.setState({"fen": this.board.fen()})
@@ -48,12 +42,6 @@ class Board extends React.Component {
     handleHumanMove(move) {
         if (this.board.turn() !== this.state.humanTurn || this.board.isGameOver()) {
             return
-        }
-        if (move.to[1] === "1" || move.to[1] === "8") {
-            let piece = this.board.get(move.from).type
-            if (piece === "p") {
-                move.promotion = prompt("What would you like to promote to (q, r, b, n)?")
-            }
         }
         try {
             this.board.move(move)
@@ -208,24 +196,26 @@ class Board extends React.Component {
             <div id="chessboard">
                 <div className="boardBox">
                     <Chessboard
-                        darkSquareStyle={{backgroundColor: 'rgb(112,102,119)'}}
-                        lightSquareStyle={{backgroundColor: 'rgb(204,183,174)'}}
+                        customDarkSquareStyle={{backgroundColor: 'rgb(112,102,119)'}}
+                        customLightSquareStyle={{backgroundColor: 'rgb(204,183,174)'}}
                         position={this.state.fen} 
-                        onDrop={(move) => {
+                        onPieceDrop={(sourceSquare, targetSquare, piece) => {
                             if (this.props.mode === this.PUZZLE) {
                                 this.handleHumanMove({
-                                    from: move.sourceSquare,
-                                    to: move.targetSquare,
+                                    from: sourceSquare,
+                                    to: targetSquare,
+                                    promotion: piece[1].toLowerCase() ?? "q"
                                 })
                             } else if (this.props.mode === this.EVALUATION) {
                                 this.handleEvalMove({
-                                    from: move.sourceSquare,
-                                    to: move.targetSquare
+                                    from: sourceSquare,
+                                    to: targetSquare,
+                                    promotion: piece[1].toLowerCase() ?? "q"
                                 })
                             }
                         }}
                         orientation={this.state.humanTurn === "w" ? "white" : "black"}
-                        width="560"
+                        boardWidth="560"
                     ></Chessboard>
                     <div className="turnBox">
                         {
