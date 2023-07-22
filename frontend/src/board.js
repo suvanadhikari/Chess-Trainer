@@ -126,6 +126,9 @@ class Board extends React.Component {
         if (!this.state.evalStates.evalReady) {
             return
         }
+        if (idx < -1 || idx >= this.state.evalStates.moves.length) {
+            return
+        }
         let prevEvalStates = this.state.evalStates
         prevEvalStates.moveIndex = idx + 1;
 
@@ -198,9 +201,20 @@ class Board extends React.Component {
         }
     }
 
+    handleKeyPress(event) {
+        console.log(event.key)
+        if (this.props.mode === this.EVALUATION && this.state.evalStates.evalReady) {
+            if (event.key === "ArrowLeft") {
+                this.changeEvalLine(this.state.evalStates.moveIndex - 2)
+            } else if (event.key === "ArrowRight") {
+                this.changeEvalLine(this.state.evalStates.moveIndex)
+            }
+        }
+    }
+
     render() {
         return (
-            <div id="chessboard">
+            <div id="chessboard" onKeyDown={this.handleKeyPress.bind(this)} tabIndex={-1}>
                 <div className="boardBox">
                     <Chessboard
                         customDarkSquareStyle={{backgroundColor: 'rgb(112,102,119)'}}
