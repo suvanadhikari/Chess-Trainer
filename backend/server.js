@@ -6,7 +6,7 @@ const Pool = require('pg').Pool
 require("dotenv").config()
 
 
-const SERVER_PORT = 4000
+const SERVER_PORT = process.env.PORT
 const app = express()
 
 app.use(cors())
@@ -14,11 +14,11 @@ app.use(bodyParser.json())
 
 
 const pool = new Pool({
-    user: process.env.DATABASE_USER,
-    host: process.env.DATABASE_HOST,
-    database: process.env.DATABASE_NAME,
-    password: process.env.DATABASE_PASSWORD,
-    port: process.env.DATABASE_PORT
+    user: process.env.PG_USER,
+    host: process.env.PG_HOST,
+    database: process.env.PG_NAME,
+    password: process.env.PG_PASSWORD,
+    port: process.env.PG_PORT
 })
 
 
