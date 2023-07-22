@@ -15,9 +15,17 @@ class SettingsOverlay extends React.Component {
     }
 
     render() {
+        const modalStyle = {
+            overlay: {
+                zIndex: 999
+            }
+        }
         return (
             <>
-                <ReactModal isOpen={this.state.showOverlay} onRequestClose={this.closeOverlay.bind(this)}>
+                <ReactModal 
+                    isOpen={this.state.showOverlay} 
+                    onRequestClose={this.closeOverlay.bind(this)}
+                    style={modalStyle}>
                     <p>Settings go here!</p>
                 </ReactModal>
                 <button onClick={this.openOverlay.bind(this)}>Settings</button>

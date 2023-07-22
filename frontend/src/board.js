@@ -214,7 +214,7 @@ class Board extends React.Component {
                                 })
                             }
                         }}
-                        orientation={this.state.humanTurn === "w" ? "white" : "black"}
+                        boardOrientation={this.state.humanTurn === "w" ? "white" : "black"}
                         boardWidth="560"
                     ></Chessboard>
                     <div className="turnBox">
