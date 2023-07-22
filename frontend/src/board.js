@@ -168,7 +168,7 @@ class Board extends React.Component {
         }
 
         if (evaluation.unit === "cp") {
-            return evaluation.value < 0 ? (evaluation.value / 100).toString() : "+" + evaluation.value / 100;
+            return evaluation.value <= 0 ? (evaluation.value / 100).toFixed(2).toString() : "+" + (evaluation.value / 100).toFixed(2);
         } else {
             return ((evaluation.value < 0) ? `-#${-1 * evaluation.value}` : `#${evaluation.value}`)
         }
