@@ -2,6 +2,7 @@ import './App.css';
 import React from 'react'
 import { Board } from "./board.js"
 import { SettingsOverlay } from "./settingsOverlay.js"
+import { StartScreen } from "./startScreen.js"
 // import { BrowserRouter as Router, Route, Link } from "react-router-dom"
 import axios from "axios"
 
@@ -68,7 +69,9 @@ class App extends React.Component {
           this.state.mode === this.STARTING
           ?
           <div className="start">
+            <StartScreen></StartScreen>
             <button onClick={this.beginPuzzles.bind(this)}>Begin Puzzles</button>
+            <SettingsOverlay updateCallback={this.updateSettings.bind(this)}></SettingsOverlay>
           </div>
           :
           <div className="puzzle">

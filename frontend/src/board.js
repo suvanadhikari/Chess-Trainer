@@ -64,8 +64,6 @@ class Board extends React.Component {
         if (this.props.settings.limitStrength) {
             body['strength'] = this.props.settings.engineElo
         }
-        console.log("Sent request:")
-        console.log(body)
         axios.post(`${process.env.REACT_APP_SERVER_PORT}/evaluate`, body)
             .then(response => {
                 let move = response.data.bestmove
@@ -91,8 +89,6 @@ class Board extends React.Component {
         }
         
         let body = {fen: this.board.fen(), depth: this.props.settings.reviewDepth}
-        console.log("Sent request:")
-        console.log(body)
         axios.post(`${process.env.REACT_APP_SERVER_PORT}/evaluate`, body)
             .then(response => {
                 let maxDepthReached = response.data.info[response.data.info.length - 1].depth
@@ -202,7 +198,6 @@ class Board extends React.Component {
     }
 
     handleKeyPress(event) {
-        console.log(event.key)
         if (this.props.mode === this.EVALUATION && this.state.evalStates.evalReady) {
             if (event.key === "ArrowLeft") {
                 this.changeEvalLine(this.state.evalStates.moveIndex - 2)

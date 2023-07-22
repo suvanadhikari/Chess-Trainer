@@ -63,7 +63,6 @@ class SettingsOverlay extends React.Component {
                                 <input type="range" min="1000" max="3000" defaultValue="3000" step="100" onChange={(e)=>{this.updateSettings({engineElo: parseInt(e.target.value)})}}></input>
                                 <label className="sliderNumber">{this.state.engineElo}</label>
                             </div>
-                            <br></br>
                         </>
                     }
                     <br></br>
@@ -73,7 +72,6 @@ class SettingsOverlay extends React.Component {
                         <input type="range" min="10" max="20" defaultValue="15" onChange={(e)=>{this.updateSettings({moveDepth: parseInt(e.target.value)})}}></input>
                         <label className="sliderNumber">{this.state.moveDepth}</label>
                     </div>
-                    <br></br>
                     <br></br>
                     Engine depth (for review):
                     <br></br>
