@@ -13,13 +13,19 @@ app.use(cors())
 app.use(bodyParser.json())
 
 
-const pool = new Pool({
-    user: process.env.PG_USER,
-    host: process.env.PG_HOST,
-    database: process.env.PG_DATABASE,
-    password: process.env.PG_PASSWORD,
-    port: process.env.PG_PORT
-})
+const pool = process.env.NODE_ENV == "production" 
+    ? 
+    new Pool({
+        connectionString: process.env.DATABASE_URL,
+    })
+    :
+    new Pool({
+        user: process.env.PG_USER,
+        host: process.env.PG_HOST,
+        database: process.env.PG_DATABASE,
+        password: process.env.PG_PASSWORD,
+        port: process.env.PG_PORT
+    })
 
 
 const puzzleEndpoint = express.Router()
