@@ -12,11 +12,13 @@ const app = express()
 app.use(cors())
 app.use(bodyParser.json())
 
+let isProduction = process.env.NODE_ENV === "production"
 
-const pool = process.env.NODE_ENV == "production" 
+const pool = isProduction
     ? 
     new Pool({
         connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false },
     })
     :
     new Pool({
