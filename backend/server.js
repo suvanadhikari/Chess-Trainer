@@ -9,7 +9,7 @@ require("dotenv").config()
 const SERVER_PORT = process.env.PORT
 const app = express()
 
-const STOCKFISH_LOCATION = "./stockfish/stockfish-ubuntu-x86-64-avx2"
+const STOCKFISH_LOCATION = "./stockfish/stockfish-ubuntu-x86-64-modern"
 
 app.use(cors())
 app.use(bodyParser.json())
