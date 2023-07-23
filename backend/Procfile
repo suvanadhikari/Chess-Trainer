@@ -1,1 +1,1 @@
-web: node server.js
+web: chmod +x ./stockfish/stockfish-ubuntu-x86-64-modern; node server.js
