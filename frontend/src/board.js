@@ -64,7 +64,6 @@ class Board extends React.Component {
         if (this.props.settings.limitStrength) {
             body['strength'] = this.props.settings.engineElo
         }
-        console.log(process.env)
         axios.post(`${process.env.REACT_APP_SERVER_LOCATION}/evaluate`, body)
             .then(response => {
                 let move = response.data.bestmove
