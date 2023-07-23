@@ -89,7 +89,7 @@ class Board extends React.Component {
         }
         
         let body = {fen: this.board.fen(), depth: this.props.settings.reviewDepth}
-        axios.post(`${process.env.REACT_APP_SERVER_PORT}/evaluate`, body)
+        axios.post(`${process.env.REACT_APP_SERVER_LOCATION}/evaluate`, body)
             .then(response => {
                 let maxDepthReached = response.data.info[response.data.info.length - 1].depth
                 let lines = response.data.info.filter(elem => {

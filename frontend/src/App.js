@@ -27,7 +27,7 @@ class App extends React.Component {
   }
 
   getNewPuzzle() {
-    axios.get(`${process.env.REACT_APP_SERVER_PORT}/getpuzzle`)
+    axios.get(`${process.env.REACT_APP_SERVER_LOCATION}/getpuzzle`)
       .then(response => {
         this.setState({
           "board_fen": response.data.fen,
