@@ -9,6 +9,8 @@ require("dotenv").config()
 const SERVER_PORT = process.env.PORT
 const app = express()
 
+const STOCKFISH_LOCATION = "../stockfish/stockfish-windows-2022-x86-64-avx2.exe"
+
 app.use(cors())
 app.use(bodyParser.json())
 
@@ -54,7 +56,7 @@ evaluationEndpoint.route("/").post((req, res) => {
     let fen = req.body.fen
     let depth = req.body.depth ? req.body.depth : 15
     let strength = req.body.strength
-    const engine = new Engine(process.env.STOCKFISH_LOCATION)
+    const engine = new Engine(STOCKFISH_LOCATION)
     if (strength === undefined) {
         engine.chain()
             .init()
