@@ -1,5 +1,5 @@
 # Chess Trainer
-An app to train chess abilities - similar to a tactics app, but there isn't always a right answer.
+A webapp app to train chess abilities - similar to a tactics app, but there isn't always a right answer.
 
 The app can be found [here](https://chess-trainer.netlify.app/). Instructions on how to use it are also found there.
 
