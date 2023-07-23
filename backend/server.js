@@ -35,7 +35,7 @@ const puzzleEndpoint = express.Router()
 
 
 puzzleEndpoint.route("/").get((req, res) => {
-    pool.query('SELECT fen FROM public."GeneralPositions" TABLESAMPLE SYSTEM(1) LIMIT 1 OFFSET floor(random() * (SELECT count(*) FROM public."GeneralPositions"));', (error, results) => {
+    pool.query('SELECT fen FROM public."GeneralPositions" TABLESAMPLE SYSTEM_ROWS(1);', (error, results) => {
         if (error) {
             throw error
         }
