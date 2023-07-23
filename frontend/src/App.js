@@ -27,8 +27,6 @@ class App extends React.Component {
   }
 
   getNewPuzzle() {
-    console.log("Env variables:")
-    console.log(process.env)
     axios.get(`${process.env.REACT_APP_SERVER_LOCATION}/getpuzzle`)
       .then(response => {
         this.setState({
