@@ -5,10 +5,6 @@ import ReactModal from "react-modal"
 class SettingsOverlay extends React.Component {
     state = {
         showOverlay: false,
-        limitStrength: false,
-        engineElo: 3190,
-        moveDepth: 15,
-        reviewDepth: 17
     }
 
     openOverlay() {
@@ -20,10 +16,8 @@ class SettingsOverlay extends React.Component {
     }
 
     updateSettings(settingChange) {
-        this.setState(settingChange, () => {
-            let {showOverlay: _, ...settings} = this.state
-            this.props.updateCallback(settings)
-        })
+        let newSettings = {...this.props.settings, ...settingChange}
+        this.props.updateCallback(newSettings)
     }
 
     render() {
@@ -51,17 +45,17 @@ class SettingsOverlay extends React.Component {
                     onRequestClose={this.closeOverlay.bind(this)}
                     style={modalStyle}>
                     <h3 id="settingsHeader">Settings:</h3>
-                    Limit engine strength (for opponent's moves): <input type="checkbox" value={this.state.limitStrength} onChange={(e)=>{this.updateSettings({limitStrength: e.target.checked})}}></input>
+                    Limit engine strength (for opponent's moves): <input type="checkbox" checked={this.props.settings.limitStrength} onChange={(e)=>{this.updateSettings({limitStrength: e.target.checked})}}></input>
                     <br></br>
                     {
-                        this.state.limitStrength &&
+                        this.props.settings.limitStrength &&
                         <>
                             <br></br>
                             Engine strength (for opponent's moves):
                             <br></br>
                             <div className="settingDiv">
-                                <input type="range" min="1320" max="3190" value={this.state.engineElo} step="10" onChange={(e)=>{this.updateSettings({engineElo: parseInt(e.target.value)})}}></input>
-                                <label className="sliderNumber">{this.state.engineElo}</label>
+                                <input type="range" min="1320" max="3190" value={this.props.settings.engineElo} step="10" onChange={(e)=>{this.updateSettings({engineElo: parseInt(e.target.value)})}}></input>
+                                <label className="sliderNumber">{this.props.settings.engineElo}</label>
                             </div>
                         </>
                     }
@@ -69,15 +63,15 @@ class SettingsOverlay extends React.Component {
                     Engine depth (for opponent's moves):
                     <br></br>
                     <div className="settingDiv">
-                        <input type="range" min="10" max="20" value={this.state.moveDepth} onChange={(e)=>{this.updateSettings({moveDepth: parseInt(e.target.value)})}}></input>
-                        <label className="sliderNumber">{this.state.moveDepth}</label>
+                        <input type="range" min="10" max="20" value={this.props.settings.moveDepth} onChange={(e)=>{this.updateSettings({moveDepth: parseInt(e.target.value)})}}></input>
+                        <label className="sliderNumber">{this.props.settings.moveDepth}</label>
                     </div>
                     <br></br>
                     Engine depth (for review):
                     <br></br>
                     <div className="settingDiv">
-                        <input type="range" min="10" max="20" value={this.state.reviewDepth} onChange={(e)=>{this.updateSettings({reviewDepth: parseInt(e.target.value)})}}></input>
-                        <label className="sliderNumber">{this.state.reviewDepth}</label>
+                        <input type="range" min="10" max="20" value={this.props.settings.reviewDepth} onChange={(e)=>{this.updateSettings({reviewDepth: parseInt(e.target.value)})}}></input>
+                        <label className="sliderNumber">{this.props.settings.reviewDepth}</label>
                     </div>
                 </ReactModal>
                 <button onClick={this.openOverlay.bind(this)}>Settings</button>
