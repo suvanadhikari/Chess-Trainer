@@ -46,9 +46,6 @@ class StockfishInterface {
         let limitStrength = options.limitStrength ? true : false
         let rating = options.rating
 
-        console.log(limitStrength)
-        console.log(rating)
-
         let readyListener = (message) => {
             if (message.data === "readyok") {
                 this.currentState = this.states.RUNNING;
