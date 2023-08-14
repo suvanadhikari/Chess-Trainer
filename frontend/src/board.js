@@ -2,7 +2,6 @@ import "./board.css"
 import React from "react";
 import { Chessboard } from 'react-chessboard'
 import { Chess } from "chess.js"
-import axios from "axios"
 import StockfishInterface from "./stockfishInterface";
 
 
