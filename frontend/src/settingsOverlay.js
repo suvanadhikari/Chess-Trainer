@@ -6,7 +6,7 @@ class SettingsOverlay extends React.Component {
     state = {
         showOverlay: false,
         limitStrength: false,
-        engineElo: 3000,
+        engineElo: 3190,
         moveDepth: 15,
         reviewDepth: 17
     }
@@ -51,7 +51,7 @@ class SettingsOverlay extends React.Component {
                     onRequestClose={this.closeOverlay.bind(this)}
                     style={modalStyle}>
                     <h3 id="settingsHeader">Settings:</h3>
-                    Limit engine strength (for opponent's moves): <input type="checkbox" onChange={(e)=>{this.updateSettings({limitStrength: e.target.checked})}}></input>
+                    Limit engine strength (for opponent's moves): <input type="checkbox" value={this.state.limitStrength} onChange={(e)=>{this.updateSettings({limitStrength: e.target.checked})}}></input>
                     <br></br>
                     {
                         this.state.limitStrength &&
@@ -60,7 +60,7 @@ class SettingsOverlay extends React.Component {
                             Engine strength (for opponent's moves):
                             <br></br>
                             <div className="settingDiv">
-                                <input type="range" min="1000" max="3000" defaultValue="3000" step="100" onChange={(e)=>{this.updateSettings({engineElo: parseInt(e.target.value)})}}></input>
+                                <input type="range" min="1320" max="3190" value={this.state.engineElo} step="10" onChange={(e)=>{this.updateSettings({engineElo: parseInt(e.target.value)})}}></input>
                                 <label className="sliderNumber">{this.state.engineElo}</label>
                             </div>
                         </>
@@ -69,14 +69,14 @@ class SettingsOverlay extends React.Component {
                     Engine depth (for opponent's moves):
                     <br></br>
                     <div className="settingDiv">
-                        <input type="range" min="10" max="20" defaultValue="15" onChange={(e)=>{this.updateSettings({moveDepth: parseInt(e.target.value)})}}></input>
+                        <input type="range" min="10" max="20" value={this.state.moveDepth} onChange={(e)=>{this.updateSettings({moveDepth: parseInt(e.target.value)})}}></input>
                         <label className="sliderNumber">{this.state.moveDepth}</label>
                     </div>
                     <br></br>
                     Engine depth (for review):
                     <br></br>
                     <div className="settingDiv">
-                        <input type="range" min="10" max="20" defaultValue="17" onChange={(e)=>{this.updateSettings({reviewDepth: parseInt(e.target.value)})}}></input>
+                        <input type="range" min="10" max="20" value={this.state.reviewDepth} onChange={(e)=>{this.updateSettings({reviewDepth: parseInt(e.target.value)})}}></input>
                         <label className="sliderNumber">{this.state.reviewDepth}</label>
                     </div>
                 </ReactModal>

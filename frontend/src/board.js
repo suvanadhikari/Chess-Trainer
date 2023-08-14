@@ -2,7 +2,8 @@ import "./board.css"
 import React from "react";
 import { Chessboard } from 'react-chessboard'
 import { Chess } from "chess.js"
-import axios from "axios"
+import StockfishInterface from "./stockfishInterface";
+
 
 class Board extends React.Component {
 
@@ -24,6 +25,8 @@ class Board extends React.Component {
     }
 
     board = new Chess()
+    engineInterface = new StockfishInterface()
+
 
     handleEvalMove(move) {
         if (this.board.isGameOver() || !this.state.evalStates.evalReady) {
@@ -60,62 +63,111 @@ class Board extends React.Component {
     }
 
     performComputerMove() {
-        let body = {fen: this.board.fen(), depth: this.props.settings.moveDepth}
+
+        let options = {depth: this.props.settings.moveDepth}
+
         if (this.props.settings.limitStrength) {
-            body['strength'] = this.props.settings.engineElo
+            options.limitStrength = true;
+            options.rating = this.props.settings.engineElo;
         }
-        axios.post(`${process.env.REACT_APP_SERVER_LOCATION}/evaluate`, body)
-            .then(response => {
-                let move = response.data.bestmove
-                this.board.move(move)
-                this.setState({"fen": this.board.fen()})
-            })
+
+        this.engineInterface.findBestMove(this.board.fen(), options, (move) => {
+            this.board.move(move);
+            this.setState({"fen": this.board.fen()})
+        })
     }
 
+    setEvals() {
 
-    setEvals(moveIndex) {
-        if (moveIndex > this.state.evalStates.moves.length) {
-            let prevEvalStates = this.state.evalStates
-            prevEvalStates.evalReady = true
-            this.setState({
-                evalStates: prevEvalStates
-            })
-            while (this.board.undo()) {}
-            return
+        let getGameEnding = (position) => {
+            let resultBoard = new Chess(position)
+            if (resultBoard.isCheckmate() && resultBoard.turn() === "w") {
+                return "0-1"
+            } else if (resultBoard.isCheckmate() && resultBoard.turn() === "b") {
+                return "1-0"
+            }
+            return "0.5-0.5"
         }
-        if (moveIndex > 0) {
-            let move = this.state.evalStates.moves[moveIndex - 1]
-            this.board.move(move)
+
+        let options = {
+            depth: this.props.settings.reviewDepth,
+            multipv: 4
         }
-        
-        let body = {fen: this.board.fen(), depth: this.props.settings.reviewDepth}
-        axios.post(`${process.env.REACT_APP_SERVER_LOCATION}/evaluate`, body)
-            .then(response => {
-                let maxDepthReached = response.data.info[response.data.info.length - 1].depth
-                let lines = response.data.info.filter(elem => {
-                    return elem.depth === maxDepthReached && typeof(elem.pv) === "string"
-                })
-                
-                for (let i in lines) {
-                    let line = lines[i]
-                    let conversionBoard = new Chess(this.board.fen())
-                    let evalMoves = line.pv.split(" ")
-                    for (let j in evalMoves) {
-                        conversionBoard.move(evalMoves[j])
+        let positionsToReview = []
+        while (this.board.undo()) {}
+        positionsToReview.push(this.board.fen())
+        for (let i in this.state.evalStates.moves) {
+            this.board.move(this.state.evalStates.moves[i])
+            positionsToReview.push(this.board.fen())
+        }
+        this.engineInterface.reviewPositions(positionsToReview, options, (results) => {
+            let prevEvalStates = this.state.evalStates;
+            for (let moveIndex in results) {
+                let positionResult = results[moveIndex]
+                for (let lineIndex in positionResult) {
+                    let line = positionResult[lineIndex]
+                    let moves = line.pv.split(" ")
+                    let conversionBoard = new Chess(positionsToReview[moveIndex])
+                    for (let j in moves) {
+                        conversionBoard.move(moves[j])
                     }
-                    lines[i].pv = conversionBoard.history().join(" ")
-                    lines[i].evaluation = this.getEvalDisplay(lines[i].score, moveIndex)
+                    line.pv = conversionBoard.history().join(" ")
+                    line.evaluation = this.getEvalDisplay(positionResult[lineIndex].score, moveIndex)
                 }
-                let prevEvalStates = this.state.evalStates;
-                prevEvalStates.lines.push(lines)
-                prevEvalStates.evals.push(lines[0].evaluation)
+                prevEvalStates.lines.push(positionResult)
+                prevEvalStates.evals.push(positionResult.length ? positionResult[0].evaluation : getGameEnding(positionsToReview[moveIndex]))
                 if (moveIndex > 0) {
-                    prevEvalStates.evalsAfter.push(lines[0].evaluation)
+                    prevEvalStates.evalsAfter.push(positionResult.length ? positionResult[0].evaluation : getGameEnding(positionsToReview[moveIndex]))
                 }
-                this.setState({evalStates: prevEvalStates}, () => {
-                    this.setEvals(moveIndex + 1)
-                })
-            })
+            }
+            prevEvalStates.evalReady = true;
+            while (this.board.undo()) {}
+            this.setState({evalStates: prevEvalStates})
+        })
+
+
+        // if (moveIndex > this.state.evalStates.moves.length) {
+        //     let prevEvalStates = this.state.evalStates
+        //     prevEvalStates.evalReady = true
+        //     this.setState({
+        //         evalStates: prevEvalStates
+        //     })
+        //     while (this.board.undo()) {}
+        //     return
+        // }
+        // if (moveIndex > 0) {
+        //     let move = this.state.evalStates.moves[moveIndex - 1]
+        //     this.board.move(move)
+        // }
+        
+        // let body = {fen: this.board.fen(), depth: this.props.settings.reviewDepth}
+        // axios.post(`${process.env.REACT_APP_SERVER_LOCATION}/evaluate`, body)
+        //     .then(response => {
+        //         let maxDepthReached = response.data.info[response.data.info.length - 1].depth
+        //         let lines = response.data.info.filter(elem => {
+        //             return elem.depth === maxDepthReached && typeof(elem.pv) === "string"
+        //         })
+                
+        //         for (let i in lines) {
+        //             let line = lines[i]
+        //             let conversionBoard = new Chess(this.board.fen())
+        //             let evalMoves = line.pv.split(" ")
+        //             for (let j in evalMoves) {
+        //                 conversionBoard.move(evalMoves[j])
+        //             }
+        //             lines[i].pv = conversionBoard.history().join(" ")
+        //             lines[i].evaluation = this.getEvalDisplay(lines[i].score, moveIndex)
+        //         }
+        //         let prevEvalStates = this.state.evalStates;
+        //         prevEvalStates.lines.push(lines)
+        //         prevEvalStates.evals.push(lines[0].evaluation)
+        //         if (moveIndex > 0) {
+        //             prevEvalStates.evalsAfter.push(lines[0].evaluation)
+        //         }
+        //         this.setState({evalStates: prevEvalStates}, () => {
+        //             this.setEvals(moveIndex + 1)
+        //         })
+        //     })
     }
 
     changeEvalLine(idx) {
@@ -155,15 +207,16 @@ class Board extends React.Component {
         this.setState({
             'evalStates': prevEvalStates,
             'fen': this.board.fen()
-        }, () => {this.setEvals(0)})
+        }, () => {this.setEvals()})
 
     }
 
     getEvalDisplay(evaluation, moveIndex) {
-
-        if (moveIndex === undefined && this.state.humanTurn === "b") {
+        if (moveIndex !== undefined && moveIndex % 2 === 1) {
             evaluation.value *= -1
-        } else if (moveIndex !== undefined && ((this.state.humanTurn === "w" ? 0 : 1) + moveIndex) % 2 === 1) {
+        }
+
+        if (this.state.humanTurn === "b") {
             evaluation.value *= -1
         }
 

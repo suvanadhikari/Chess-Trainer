@@ -1,3 +1,4 @@
 # Auto detect text files and perform LF normalization
 * text=auto
-backend/stockfish/** linguist-vendored
+frontend/public/stockfish-nnue-16-single.js linguist-vendored
+frontend/public/stockfish-nnue-16-single.wasm linguist-vendored
