@@ -20,7 +20,7 @@ class App extends React.Component {
     "displayEvalButton": false,
     "settings": {
       "limitStrength": false,
-      "engineElo": 3000,
+      "engineElo": 3190,
       "moveDepth": 15,
       "reviewDepth": 17
     }

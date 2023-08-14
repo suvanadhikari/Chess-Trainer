@@ -91,7 +91,7 @@ class Board extends React.Component {
 
         let options = {
             depth: this.props.settings.reviewDepth,
-            multipv: 10
+            multipv: 4
         }
         let positionsToReview = []
         while (this.board.undo()) {}
@@ -212,10 +212,11 @@ class Board extends React.Component {
     }
 
     getEvalDisplay(evaluation, moveIndex) {
-
-        if (moveIndex === undefined && this.state.humanTurn === "b") {
+        if (moveIndex !== undefined && moveIndex % 2 === 1) {
             evaluation.value *= -1
-        } else if (moveIndex !== undefined && ((this.state.humanTurn === "w" ? 0 : 1) + moveIndex) % 2 === 0) {
+        }
+
+        if (this.state.humanTurn === "b") {
             evaluation.value *= -1
         }
 
