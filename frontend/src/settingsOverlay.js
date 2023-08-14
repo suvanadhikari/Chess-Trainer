@@ -23,8 +23,8 @@ class SettingsOverlay extends React.Component {
     render() {
         const modalStyle = {
             content: {
-                width: "35vw",
-                height: "40vh",
+                width: "min(375px, 100vw)",
+                height: "min(375px, 100vh)",
                 backgroundColor: "#232323",
                 borderColor: "#232323",
                 color: "white",
@@ -43,7 +43,8 @@ class SettingsOverlay extends React.Component {
                 <ReactModal 
                     isOpen={this.state.showOverlay} 
                     onRequestClose={this.closeOverlay.bind(this)}
-                    style={modalStyle}>
+                    style={modalStyle}
+                    ariaHideApp={false}>
                     <h3 id="settingsHeader">Settings:</h3>
                     Limit engine strength (for opponent's moves): <input type="checkbox" checked={this.props.settings.limitStrength} onChange={(e)=>{this.updateSettings({limitStrength: e.target.checked})}}></input>
                     <br></br>
@@ -72,6 +73,13 @@ class SettingsOverlay extends React.Component {
                     <div className="settingDiv">
                         <input type="range" min="10" max="20" value={this.props.settings.reviewDepth} onChange={(e)=>{this.updateSettings({reviewDepth: parseInt(e.target.value)})}}></input>
                         <label className="sliderNumber">{this.props.settings.reviewDepth}</label>
+                    </div>
+                    <br></br>
+                    Number of lines (for review):
+                    <br></br>
+                    <div className="settingDiv">
+                        <input type="range" min="2" max="6" value={this.props.settings.reviewNumLines} onChange={(e)=>{this.updateSettings({reviewNumLines: parseInt(e.target.value)})}}></input>
+                        <label className="sliderNumber">{this.props.settings.reviewNumLines}</label>
                     </div>
                 </ReactModal>
                 <button onClick={this.openOverlay.bind(this)}>Settings</button>

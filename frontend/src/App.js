@@ -22,7 +22,8 @@ class App extends React.Component {
       "limitStrength": false,
       "engineElo": 3190,
       "moveDepth": 15,
-      "reviewDepth": 17
+      "reviewDepth": 17,
+      "reviewNumLines": 4
     }
   }
 

@@ -91,7 +91,7 @@ class Board extends React.Component {
 
         let options = {
             depth: this.props.settings.reviewDepth,
-            multipv: 4
+            multipv: this.props.settings.reviewNumLines
         }
         let positionsToReview = []
         while (this.board.undo()) {}
