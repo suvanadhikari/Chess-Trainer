@@ -22,7 +22,8 @@ class App extends React.Component {
       "limitStrength": false,
       "engineElo": 3190,
       "moveDepth": 15,
-      "reviewDepth": 17
+      "reviewDepth": 17,
+      "reviewNumLines": 4
     }
   }
 
@@ -71,7 +72,7 @@ class App extends React.Component {
           <div className="start">
             <StartScreen></StartScreen>
             <button onClick={this.beginPuzzles.bind(this)}>Begin Puzzles</button>
-            <SettingsOverlay updateCallback={this.updateSettings.bind(this)}></SettingsOverlay>
+            <SettingsOverlay settings={this.state.settings} updateCallback={this.updateSettings.bind(this)}></SettingsOverlay>
           </div>
           :
           <div className="puzzle">
@@ -88,7 +89,7 @@ class App extends React.Component {
               &&
               <button onClick={this.evaluatePuzzle.bind(this)}>Evaluate Position</button>
             }
-            <SettingsOverlay updateCallback={this.updateSettings.bind(this)}></SettingsOverlay>
+            <SettingsOverlay settings={this.state.settings} updateCallback={this.updateSettings.bind(this)}></SettingsOverlay>
           </div>
         }
 
