@@ -74,7 +74,7 @@ class StockfishInterface {
 
     }
 
-    reviewPositions(positions, options, callback) {
+    reviewPositions(positions, options, callback, progressCallback) {
         if (this.currentState !== this.states.READY) {
             return false;
         }
@@ -101,6 +101,9 @@ class StockfishInterface {
                 results[positionsCalculated].push(message.data)
             } else if (message.data.startsWith("bestmove")) {
                 positionsCalculated++;
+                if (progressCallback) {
+                    progressCallback(positionsCalculated / positions.length)
+                }
                 if (positionsCalculated === positions.length) {
                     this.engine.removeEventListener("message", readyListener);
                     this.engine.removeEventListener("message", resultListener);

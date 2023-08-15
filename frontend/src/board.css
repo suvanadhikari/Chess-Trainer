@@ -24,7 +24,25 @@
     font-weight: bold;
     background-color: darkred;
 }
+.movesContainer {
+    word-wrap: break-word;
+    width: 100%;
+    display: inline-block;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
 .moveSpan {
     margin-left:5px;
-    /* margin-right:5px; */
+    white-space: nowrap;
+}
+
+.progressDiv {
+    width: 50%;
+    /* height: 50%; */
+    margin: auto;
+    margin-top: 25%;
+    /* transform: translate(-25%, -25%); */
 }
