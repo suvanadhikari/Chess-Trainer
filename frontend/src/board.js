@@ -2,6 +2,8 @@ import "./board.css"
 import React from "react";
 import { Chessboard } from 'react-chessboard'
 import { Chess } from "chess.js"
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 import StockfishInterface from "./stockfishInterface";
 
 
@@ -20,7 +22,8 @@ class Board extends React.Component {
             "playerEval": 0,
             "lines": [],
             "moveIndex": 0,
-            "evalReady": false
+            "evalReady": false,
+            "evalProgress": 0
         }
     }
 
@@ -123,6 +126,12 @@ class Board extends React.Component {
             prevEvalStates.evalReady = true;
             while (this.board.undo()) {}
             this.setState({evalStates: prevEvalStates})
+        }, (progress)=>{
+            let prevEvalStates = this.state.evalStates;
+            prevEvalStates.evalProgress = progress * 100;
+            this.setState({
+                evalStates: prevEvalStates
+            }, ()=>{console.log(this.state)})
         })
 
 
@@ -203,6 +212,7 @@ class Board extends React.Component {
         prevEvalStates.evals = []
         prevEvalStates.evalsAfter = []
         prevEvalStates.evalReady = false;
+        prevEvalStates.evalProgress = 0;
 
         this.setState({
             'evalStates': prevEvalStates,
@@ -298,86 +308,93 @@ class Board extends React.Component {
                 </div>
                 {this.props.mode === this.EVALUATION &&
                 <div className = "evaluationBox">
-                    <p>
-                        Moves played: 
-                        {
-                            this.state.evalStates.moves.length > 0
-                            ?
-                            <span>
-                                <span key="-1" className={this.state.evalStates.moveIndex === 0 ? "selectedMove" : ""} onClick={() => {
-                                    this.changeEvalLine(-1)
-                                }}> ...</span>
-                                {this.state.evalStates.moves.map((elem, idx) => {
-                                    if (idx % 2 === 0) {
-                                        return <span key={idx} className={this.state.evalStates.moveIndex === idx + 1 ? "selectedMove" : ""} onClick={() => {
-                                            this.changeEvalLine(idx)
-                                        }}>{` ${elem}`}</span>
-                                    } else {
-                                        return <span key={idx} className={this.state.evalStates.moveIndex === idx + 1 ? "selectedMove" : ""} onClick={() => {
-                                            this.changeEvalLine(idx)
-                                        }}>{` (${elem})`}</span>
-                                    }
-                                })}
-                            </span>
-                            :
-                            <span> None</span>
-                        }
-                        <br></br><br></br>
-                        Evaluation after all of your moves: {this.state.evalStates.evalReady ? this.state.evalStates.evals[this.state.evalStates.evals.length - 1] : "Calculating..."}
-                    </p>
-                    <div className = "lines">
-                        {
-                            this.state.evalStates.moves.length > 0 
-                            ?
-                            <span>
-                                <span>
-                                    Evaluation in this position: 
-                                    {
-                                        this.state.evalStates.evalReady
-                                        ?
-                                        " " + this.state.evalStates.evals[this.state.evalStates.moveIndex]
-                                        :
-                                        " Calculating..."
-                                    }
-                                </span>
-                                <br></br>
+                    {
+                        this.state.evalStates.evalReady
+                        ?
+                        <>
+                            <p>
                                 {
-                                    this.state.evalStates.moveIndex < this.state.evalStates.moves.length
-                                    &&
-                                    <span>
-                                        Evaluation after {this.state.evalStates.moves[this.state.evalStates.moveIndex]}:
-                                        {
-                                            this.state.evalStates.evalReady
-                                            ?
-                                            " " + this.state.evalStates.evalsAfter[this.state.evalStates.moveIndex]
-                                            :
-                                            " Calculating..."
-                                        }
-                                    </span>
-                                }
-                                <br></br><br></br>
-                                {this.state.evalStates.moveIndex < this.state.evalStates.moves.length ?
-                                    <span>
-                                        Best lines (replacing {this.state.evalStates.moves[this.state.evalStates.moveIndex]}):
+                                    this.state.evalStates.moves.length > 0
+                                    ?
+                                    <span className="movesContainer">
+                                        <span className="nowrap">Moves played:</span>
+                                        <span key="-1" className={this.state.evalStates.moveIndex === 0 ? "selectedMove moveSpan" : "moveSpan"} onClick={() => {
+                                            this.changeEvalLine(-1)
+                                        }}>...</span>
+                                        {this.state.evalStates.moves.map((elem, idx) => {
+                                            if (idx % 2 === 0) {
+                                                return <span key={idx} className={this.state.evalStates.moveIndex === idx + 1 ? "selectedMove moveSpan" : "moveSpan"} onClick={() => {
+                                                    this.changeEvalLine(idx)
+                                                }}>{`${elem}`}</span>
+                                            } else {
+                                                return <span key={idx} className={this.state.evalStates.moveIndex === idx + 1 ? "selectedMove moveSpan" : "moveSpan"} onClick={() => {
+                                                    this.changeEvalLine(idx)
+                                                }}>{`(${elem})`}</span>
+                                            }
+                                        })}
                                     </span>
                                     :
-                                    <span>
-                                        Best continuations:
-                                    </span>
+                                    <span> None</span>
                                 }
-                            </span>
-                            :
-                            <span>Best lines:</span>
-                        }
-                        
-                        {
-                            (this.state.evalStates.evalReady)
-                            &&
-                            this.state.evalStates.lines[this.state.evalStates.moveIndex].map((elem, idx) => {
-                                return <p key={idx}>({elem.evaluation})  {elem.pv}</p>
-                            })
-                        }
-                    </div>
+                                <br></br><br></br>
+                                Evaluation after all of your moves: {this.state.evalStates.evals[this.state.evalStates.evals.length - 1]}
+                            </p>
+                            <div className = "lines">
+                                {
+                                    this.state.evalStates.moves.length > 0 
+                                    ?
+                                    <span>
+                                        <span>
+                                            Evaluation in this position: 
+                                            {" " + this.state.evalStates.evals[this.state.evalStates.moveIndex]}
+                                        </span>
+                                        <br></br>
+                                        {
+                                            this.state.evalStates.moveIndex < this.state.evalStates.moves.length
+                                            &&
+                                            <span>
+                                                Evaluation after {this.state.evalStates.moves[this.state.evalStates.moveIndex]}:
+                                                { " " + this.state.evalStates.evalsAfter[this.state.evalStates.moveIndex]}
+                                            </span>
+                                        }
+                                        <br></br><br></br>
+                                        {this.state.evalStates.moveIndex < this.state.evalStates.moves.length ?
+                                            <span>
+                                                Best lines (replacing {this.state.evalStates.moves[this.state.evalStates.moveIndex]}):
+                                            </span>
+                                            :
+                                            <span>
+                                                Best continuations:
+                                            </span>
+                                        }
+                                    </span>
+                                    :
+                                    <span>Best lines:</span>
+                                }
+                                
+                                {
+                                    this.state.evalStates.lines[this.state.evalStates.moveIndex].map((elem, idx) => {
+                                        return <p key={idx}>({elem.evaluation})  {elem.pv}</p>
+                                    })
+                                }
+                            </div>
+                        </>
+                        :
+                        <div className="progressDiv">
+                            <CircularProgressbar 
+                                value={this.state.evalStates.evalProgress} 
+                                text={`${this.state.evalStates.evalProgress.toFixed(0)}%`}
+                                styles={buildStyles({
+                                    pathColor: "darkred",
+                                    trailColor: "lightgray",
+                                    textColor: "white",
+                                    strokeLinecap: "rounded"
+                                })}
+                                >
+
+                            </CircularProgressbar>
+                        </div>
+                    }
                 </div>
                 }
             </div>
